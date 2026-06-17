@@ -344,28 +344,69 @@ st.markdown(f"""
 # =========================
 # QUICK SERVICES
 # =========================
+# =========================
+# QUICK SERVICES
+# =========================
 st.markdown("### 🚀 Quick Services")
+card_style = """
+<div style="
+    background: {bg};
+    border-radius: 18px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    border: 2px solid {border};
+    transition: 0.3s ease;
+    cursor: pointer;
+">
+    <div style="font-size: 32px; margin-bottom: 8px;">
+        {icon}
+    </div>
+    <div style="
+        font-weight: 700;
+        font-size: 15px;
+        color: #1E293B;
+    ">
+        {title}
+    </div>
+</div>
+"""
 col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
-    with st.container(border=True):
-        st.image("visa_services.png", width=60)
-        st.markdown("<center><b>Visa Services</b></center>", unsafe_allow_html=True)
+    st.markdown(card_style.format(
+        bg="#FFF7E6",              # light gold tint (ACTIVE CARD)
+        border="#D4AF37",          # gold border
+        icon="🛂",
+        title="Visa Services"
+    ), unsafe_allow_html=True)
 with col2:
-    with st.container(border=True):
-        st.image("assets/driving.png", width=60)
-        st.markdown("<center><b>Driving License</b></center>", unsafe_allow_html=True)
+    st.markdown(card_style.format(
+        bg="#FFFFFF",
+        border="#E5E7EB",
+        icon="🚗",
+        title="Driving License"
+    ), unsafe_allow_html=True)
 with col3:
-    with st.container(border=True):
-        st.image("assets/business.png", width=60)
-        st.markdown("<center><b>Business License</b></center>", unsafe_allow_html=True)
+    st.markdown(card_style.format(
+        bg="#FFFFFF",
+        border="#E5E7EB",
+        icon="🏢",
+        title="Business License"
+    ), unsafe_allow_html=True)
 with col4:
-    with st.container(border=True):
-        st.image("assets/renewals.png", width=60)
-        st.markdown("<center><b>Renewals</b></center>", unsafe_allow_html=True)
+    st.markdown(card_style.format(
+        bg="#FFFFFF",
+        border="#E5E7EB",
+        icon="🔄",
+        title="Renewals"
+    ), unsafe_allow_html=True)
 with col5:
-    with st.container(border=True):
-        st.image("assets/faq.png", width=60)
-        st.markdown("<center><b>FAQs</b></center>", unsafe_allow_html=True)
+    st.markdown(card_style.format(
+        bg="#FFFFFF",
+        border="#E5E7EB",
+        icon="❓",
+        title="FAQs"
+    ), unsafe_allow_html=True)    
 
 # Sidebar
 with st.sidebar:
