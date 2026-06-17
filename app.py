@@ -342,8 +342,13 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 # =========================
-# QUICK SERVICES
+# FEATURE IMAGE SECTION
 # =========================
+st.markdown("<br>", unsafe_allow_html=True)
+st.image(
+    "service_banner.png",   # replace with your image file name
+    use_container_width=True
+)
 # =========================
 # QUICK SERVICES
 # =========================
