@@ -291,8 +291,9 @@ st.markdown("""
 st.image("hero_banner.png", use_container_width=True)
 st.markdown("""
 <div style="
-    margin-top:-300px;
+    margin-top:-200px;
     padding:40px;
+    color:white;
     background:rgba(0,0,0,0.45);
     border-radius:20px;
     max-width:650px;
