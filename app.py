@@ -288,55 +288,7 @@ st.markdown("""
 # PREMIUM HERO SECTION
 # =========================
 
-left,right = st.columns([1.4,1])
-
-with left:
-
-    st.markdown("""
-    <div style="padding-top:40px;">
-    <h1 style="
-    color:#006C4C;
-    font-size:56px;
-    font-weight:800;
-    line-height:1.1;
-    ">
-    UAE Government Services Assistant
-    </h1>
-
-    <p style="
-    font-size:20px;
-    color:#475569;
-    margin-top:15px;
-    ">
-    AI-Powered Guidance for Visas,
-    Licenses and Government Services
-    </p>
-    </div>
-    """,
-    unsafe_allow_html=True)
-
-    st.button(
-        "🚀 Start Chat",
-        use_container_width=False
-    )
-
-with right:
-
-    st.markdown("""
-    <div style="
-    background:linear-gradient(135deg,#006C4C,#0A8A64);
-    height:320px;
-    border-radius:30px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:white;
-    font-size:90px;
-    ">
-    🤖
-    </div>
-    """,
-    unsafe_allow_html=True)
+st.image("hero_banner.png", use_container_width=True)
     
 # =========================
 # POPULAR SERVICES
