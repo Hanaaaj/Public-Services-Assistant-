@@ -230,7 +230,7 @@ st.markdown("""
 }
 
 .hero-section {
-    background: linear-gradient(135deg,#006C4C,#0A8A64);
+    background: white;
     padding: 60px 40px;
     border-radius: 24px;
     text-align: center;
