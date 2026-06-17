@@ -294,9 +294,8 @@ st.markdown("""
     margin-top:-320px;
     padding:40px;
     max-width:650px;
-    background:rgba(0,0,0,0.45);
     border-radius:20px;
-    color:white;
+    color:#000000;
     position:relative;
 ">
     <h1 style="
