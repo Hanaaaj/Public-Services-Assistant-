@@ -9,7 +9,7 @@ import google.generativeai as genai
 st.set_page_config(
     page_title="UAE Gov Services AI Assistant",
     page_icon="🇦🇪",
-    layout="centered"
+    layout="wide"
 )
 
 # --- DISCLAIMER BANNER ---
@@ -174,8 +174,169 @@ def generate_greeting(api_key):
 
 
 # --- UI HEADER ---
-st.title("UAE Government Services Assistant")
-st.caption("Prototype RAG-based assistant for visas and licenses")
+# =========================
+# CUSTOM CSS
+# =========================
+
+st.markdown("""
+<style>
+
+.main {
+    background-color: #F7F9FA;
+}
+
+.hero-section {
+    background: linear-gradient(135deg,#006C4C,#0A8A64);
+    padding: 60px 40px;
+    border-radius: 24px;
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.95;
+}
+
+.service-card {
+    background: white;
+    padding: 20px;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.service-card:hover {
+    transform: translateY(-4px);
+}
+
+.popular-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1E293B;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px){
+
+.hero-title{
+    font-size:2rem;
+}
+
+.hero-subtitle{
+    font-size:1rem;
+}
+
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================
+# HERO SECTION
+# =========================
+
+st.markdown("""
+<div class="hero-section">
+
+<h1 class="hero-title">
+🇦🇪 UAE Government Services Assistant
+</h1>
+
+<p class="hero-subtitle">
+AI-Powered Guidance for Visas, Licenses and Government Services
+</p>
+
+</div>
+""", unsafe_allow_html=True)
+
+# =========================
+# POPULAR SERVICES
+# =========================
+
+st.markdown(
+"""
+<div class="popular-title">
+⭐ Popular Services
+</div>
+""",
+unsafe_allow_html=True
+)
+
+col1,col2,col3,col4,col5 = st.columns(5)
+
+with col1:
+    st.button("🛂 Golden Visa")
+
+with col2:
+    st.button("🚗 Driving License")
+
+with col3:
+    st.button("🏢 Business License")
+
+with col4:
+    st.button("👨‍👩‍👧 Family Sponsorship")
+
+with col5:
+    st.button("🔄 Visa Renewal")
+
+# =========================
+# QUICK SERVICES
+# =========================
+
+st.markdown("### 🚀 Quick Services")
+
+c1,c2,c3,c4,c5 = st.columns(5)
+
+with c1:
+    st.markdown("""
+    <div class="service-card">
+    <h3>🛂</h3>
+    <b>Visa Services</b>
+    </div>
+    """, unsafe_allow_html=True)
+
+with c2:
+    st.markdown("""
+    <div class="service-card">
+    <h3>🚗</h3>
+    <b>Driving License</b>
+    </div>
+    """, unsafe_allow_html=True)
+
+with c3:
+    st.markdown("""
+    <div class="service-card">
+    <h3>🏢</h3>
+    <b>Business License</b>
+    </div>
+    """, unsafe_allow_html=True)
+
+with c4:
+    st.markdown("""
+    <div class="service-card">
+    <h3>🔄</h3>
+    <b>Renewals</b>
+    </div>
+    """, unsafe_allow_html=True)
+
+with c5:
+    st.markdown("""
+    <div class="service-card">
+    <h3>❓</h3>
+    <b>FAQs</b>
+    </div>
+    """, unsafe_allow_html=True)
+    
 
 # Sidebar
 with st.sidebar:
