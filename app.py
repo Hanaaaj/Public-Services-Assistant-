@@ -350,7 +350,7 @@ st.markdown("""
     font-size: 28px;
     font-weight: 700;
     margin: 20px 0;
-    color: #1E293B;
+    color: white;
 ">
 Quick Service Section
 </div>
