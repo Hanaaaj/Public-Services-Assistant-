@@ -342,36 +342,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 # =========================
-# POPULAR SERVICES
-# =========================
-
-st.markdown(
-"""
-<div class="popular-title">
-⭐ Popular Services
-</div>
-""",
-unsafe_allow_html=True
-)
-
-col1,col2,col3,col4,col5 = st.columns(5)
-
-with col1:
-    st.button("🛂 Golden Visa")
-
-with col2:
-    st.button("🚗 Driving License")
-
-with col3:
-    st.button("🏢 Business License")
-
-with col4:
-    st.button("👨‍👩‍👧 Family Sponsorship")
-
-with col5:
-    st.button("🔄 Visa Renewal")
-
-# =========================
 # QUICK SERVICES
 # =========================
 
