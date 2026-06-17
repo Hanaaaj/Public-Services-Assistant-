@@ -407,11 +407,39 @@ with col5:
 # =========================
 # FEATURE IMAGE SECTION
 # =========================
-st.markdown("<br>", unsafe_allow_html=True)
-st.image(
-    "service_banner1.png",   # replace with your image file name
-    use_container_width=True
-)
+image_path = "service_banner1.png"
+img = open(image_path, "rb").read()
+img_encoded = base64.b64encode(img).decode()
+st.markdown(f"""
+<div style="
+    position: relative;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+">
+    <img src="data:image/png;base64,{img_encoded}" 
+         style="width:100%; display:block;">
+    <!-- OVERLAY TITLE -->
+    <div style="
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.45);
+        padding: 10px 20px;
+        border-radius: 12px;
+    ">
+        <h2 style="
+            color: white;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        ">
+            Main AI Chat Section
+        </h2>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 # Sidebar
 with st.sidebar:
     st.header("🔑 Configuration")
