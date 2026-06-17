@@ -225,14 +225,8 @@ def generate_greeting(api_key):
 st.markdown("""
 <style>
 
-html, body, [data-testid="stAppViewContainer"] {
-    background-color: white !important;
-}
-[data-testid="stAppViewContainer"] {
-    background: white !important;
-}
 .main {
-    background: white !important;
+    background-color: #F7F9FA;
 }
 
 .hero-section {
