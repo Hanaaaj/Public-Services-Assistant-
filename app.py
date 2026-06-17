@@ -322,14 +322,14 @@ st.markdown(f"""
             line-height: 1.2;
             color: #111;
         ">
-            AI-Powered Guidance for Visas, Licenses<br>
-            Government Services
+            AI-Powered Guidance for Visas, Licenses,<br>
+            and Government Services
         </div>
         <div style="margin-top: 18px;">
             <button style="
                 background-color: #006C4C;
                 color: white;
-                padding: 10px 18px;
+                padding: 10px 25px;
                 border-radius: 10px;
                 border: none;
                 font-weight: 600;
