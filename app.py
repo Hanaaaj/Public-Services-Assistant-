@@ -330,8 +330,7 @@ with left:
 
 with right:
 
-    st.image("hero_banner.png", use_container_width=True)
-    
+    st.image("hero_banner.png", use_container_width=True)  
 # =========================
 # POPULAR SERVICES
 # =========================
