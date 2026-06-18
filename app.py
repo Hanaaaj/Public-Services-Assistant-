@@ -1,27 +1,37 @@
-"""
-app.py — UAE Government Services Assistant
-Pure Streamlit UI. All AI/retrieval logic lives in agent.py.
-"""
 import base64
 import streamlit as st
-# ── Import everything from the agent layer ──────────────────
-from agent import (
-    load_knowledge_base,
-    build_retrieval_index,
-    retrieve_context,
-    get_gemini_model,
-    start_chat_session,
-    generate_greeting,
-    generate_grounded_response,
-)
-# ─────────────────────────────────────────────
-# PAGE CONFIG
-# ─────────────────────────────────────────────
+import json
+import os
+import random  # Imported for multi-key rotation
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import google.generativeai as genai
+
+# Page Configuration Settings
 st.set_page_config(
     page_title="UAE Gov Services AI Assistant",
     page_icon="🇦🇪",
-    layout="centered",
+    layout="centered"
 )
+
+# ─────────────────────────────────────────────────────────────
+# FREE-TIER RATE LIMIT RESILIENCE & KEY ROTATION SETUP
+# ─────────────────────────────────────────────────────────────
+# Gathers all team keys from Secrets to share limits and bypass 429 rate limit exceptions
+API_KEYS_POOL = []
+for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_MEMBER_2", "GEMINI_API_KEY_MEMBER_3"]:
+    if secret_key in st.secrets and st.secrets[secret_key]:
+        API_KEYS_POOL.append(st.secrets[secret_key])
+if not API_KEYS_POOL and os.getenv("GEMINI_API_KEY"):
+    API_KEYS_POOL.append(os.getenv("GEMINI_API_KEY"))
+
+def get_rotated_api_key(manual_key: str = "") -> str:
+    """Returns a random key from the active keys pool, falling back to manual input."""
+    if manual_key:
+        return manual_key
+    if API_KEYS_POOL:
+        return random.choice(API_KEYS_POOL)
+    return ""
 
 # --- DISCLAIMER BANNER ---
 st.markdown(
@@ -192,9 +202,10 @@ st.caption("Prototype RAG-based assistant for visas and licenses")
 with st.sidebar:
     st.header("🔑 Configuration")
 
-    if "GEMINI_API_KEY" in st.secrets:
-        api_key_input = st.secrets["GEMINI_API_KEY"]
-        st.success("🔒 API key loaded from secrets.")
+    # Display status of loaded API keys in a professional pool format
+    if len(API_KEYS_POOL) > 0:
+        st.success(f"🔒 Rotation Pool: {len(API_KEYS_POOL)} free keys loaded.")
+        api_key_input = get_rotated_api_key()
     else:
         api_key_input = st.text_input("Enter Google Gemini API Key", type="password", help="Free-tier key from Google AI Studio.")
         if not api_key_input:
@@ -212,9 +223,12 @@ with st.sidebar:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Resolve current key (either manual input or from rotation pool)
+resolved_key = api_key_input if api_key_input else get_rotated_api_key()
+
 # --- GREET FIRST, BEFORE ANY USER INPUT ---
-if not st.session_state.messages and api_key_input:
-    greeting = generate_greeting(api_key_input)
+if not st.session_state.messages and resolved_key:
+    greeting = generate_greeting(resolved_key)
     st.session_state.messages.append({"role": "assistant", "content": greeting, "sources": []})
 
 # Quick Query Buttons
@@ -232,10 +246,10 @@ with col3:
     if st.button("💼 Golden Visa Options"):
         quick_query = "What is the eligibility for a Golden Visa?"
 
-if quick_query and api_key_input:
+if quick_query and resolved_key:
     st.session_state.messages.append({"role": "user", "content": quick_query})
     matched_docs, context_string = retrieve_context(quick_query, vectorizer, tfidf_matrix, kb_data)
-    reply = generate_grounded_response(quick_query, context_string, api_key_input)
+    reply = generate_grounded_response(quick_query, context_string, resolved_key)
     st.session_state.messages.append({"role": "assistant", "content": reply, "sources": matched_docs})
 
 # Render chat history
@@ -249,7 +263,7 @@ for msg in st.session_state.messages:
 
 # Chat input
 if user_input := st.chat_input("Ask about UAE visas, driving renewals, or business licenses..."):
-    if not api_key_input:
+    if not resolved_key:
         st.warning("Please enter your Gemini API key in the sidebar first.")
     else:
         st.session_state.messages.append({"role": "user", "content": user_input})
@@ -259,7 +273,7 @@ if user_input := st.chat_input("Ask about UAE visas, driving renewals, or busine
         with st.chat_message("assistant"):
             matched_docs, context_string = retrieve_context(user_input, vectorizer, tfidf_matrix, kb_data)
             with st.spinner("Thinking..."):
-                reply = generate_grounded_response(user_input, context_string, api_key_input)
+                reply = generate_grounded_response(user_input, context_string, resolved_key)
                 st.write(reply)
                 if matched_docs:
                     st.markdown("**Verify on official source:**")
@@ -271,4 +285,3 @@ if user_input := st.chat_input("Ask about UAE visas, driving renewals, or busine
                     "content": reply,
                     "sources": matched_docs
                 })
-
