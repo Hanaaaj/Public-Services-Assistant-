@@ -29,9 +29,7 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-
 .main { background-color: #F7F9FA; }
-
 .nav-bar {
     display: flex;
     justify-content: space-between;
@@ -44,7 +42,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 .nav-logo { font-size: 22px; font-weight: 700; color: #006C4C; }
 .nav-links { display: flex; gap: 28px; font-weight: 500; color: #1E293B; font-size: 14px; }
-
 .service-card {
     background: white;
     border-radius: 18px;
@@ -59,7 +56,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .service-card.active { background: #FFF7E6; border-color: #D4AF37; }
 .service-card .icon { font-size: 30px; margin-bottom: 8px; }
 .service-card .label { font-weight: 700; font-size: 14px; color: #1E293B; }
-
 .disclaimer {
     background: #fff3cd;
     padding: 12px 18px;
@@ -69,7 +65,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     font-size: 0.86rem;
     color: #856404;
 }
-
 .source-badge {
     display: inline-block;
     background: #e8f5e9;
@@ -82,40 +77,31 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 </style>
 """, unsafe_allow_html=True)
-
 # ─────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────
 def img_to_b64(path: str) -> str:
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
-
-
 # ─────────────────────────────────────────────
 # AGENT RESOURCES  (cached at app level)
 # ─────────────────────────────────────────────
 @st.cache_data
 def _load_kb():
     return load_knowledge_base()
-
 @st.cache_resource
 def _build_index(_data):
     return build_retrieval_index(_data)
-
 @st.cache_resource
 def _get_model(api_key: str):
     return get_gemini_model(api_key)
-
-
 kb_data = _load_kb()
 vectorizer, tfidf_matrix = _build_index(kb_data)
-
 # ─────────────────────────────────────────────
 # SIDEBAR
 # ─────────────────────────────────────────────
 with st.sidebar:
     st.header("🔑 Configuration")
-
     if "GEMINI_API_KEY" in st.secrets:
         api_key_input = st.secrets["GEMINI_API_KEY"]
         st.success("🔒 API key loaded from secrets.")
@@ -127,7 +113,6 @@ with st.sidebar:
         )
         if not api_key_input:
             st.info("💡 Paste your Gemini API key above to begin.")
-
     st.markdown("---")
     st.markdown("### Trusted Verification Hubs")
     st.markdown("- [Official UAE Portal](https://u.ae)")
@@ -135,13 +120,11 @@ with st.sidebar:
     st.markdown("- [GDRFA Portal](https://gdrfad.gov.ae)")
     st.markdown("- [RTA Portal](https://rta.ae)")
     st.markdown("- [MOHRE Portal](https://mohre.gov.ae)")
-
     st.markdown("---")
     if st.button("🗑️ Clear Chat"):
         st.session_state.messages = []
         st.session_state.pop("chat_session", None)
         st.rerun()
-
 # ─────────────────────────────────────────────
 # DISCLAIMER BANNER
 # ─────────────────────────────────────────────
@@ -153,7 +136,6 @@ st.markdown("""
     Always confirm details at the official source links provided.
 </div>
 """, unsafe_allow_html=True)
-
 # ─────────────────────────────────────────────
 # NAV BAR
 # ─────────────────────────────────────────────
@@ -169,7 +151,6 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
 # ─────────────────────────────────────────────
 # HERO BANNER
 # ─────────────────────────────────────────────
@@ -200,13 +181,11 @@ except FileNotFoundError:
         </div>
     </div>
     """, unsafe_allow_html=True)
-
 # ─────────────────────────────────────────────
 # QUICK SERVICE CARDS
 # ─────────────────────────────────────────────
 st.markdown("<div style='font-size:22px; font-weight:700; color:#1E293B; margin-bottom:14px;'>Quick Services</div>",
             unsafe_allow_html=True)
-
 services = [
     ("🛂", "Visa Services",    True),
     ("🚗", "Driving License",  False),
@@ -214,7 +193,6 @@ services = [
     ("🔄", "Renewals",         False),
     ("❓", "FAQs",             False),
 ]
-
 cols = st.columns(len(services))
 for col, (icon, label, active) in zip(cols, services):
     with col:
@@ -225,9 +203,7 @@ for col, (icon, label, active) in zip(cols, services):
             <div class="label">{label}</div>
         </div>
         """, unsafe_allow_html=True)
-
 st.markdown("<br>", unsafe_allow_html=True)
-
 # ─────────────────────────────────────────────
 # SERVICE BANNER (optional second image)
 # ─────────────────────────────────────────────
@@ -245,29 +221,24 @@ try:
 except FileNotFoundError:
     st.markdown("---")
     st.markdown("### 💬 AI Chat")
-
 # ─────────────────────────────────────────────
 # SESSION STATE
 # ─────────────────────────────────────────────
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
 if api_key_input and "chat_session" not in st.session_state:
     model = _get_model(api_key_input)
     st.session_state.chat_session = start_chat_session(model)
-
 # Auto-greeting on first open
 if not st.session_state.messages and api_key_input:
     greeting = generate_greeting(st.session_state.chat_session)
     st.session_state.messages.append({"role": "assistant", "content": greeting, "sources": []})
-
 # ─────────────────────────────────────────────
 # QUICK QUERY BUTTONS
 # ─────────────────────────────────────────────
 st.markdown("### ⚡ Quick Queries")
 q_col1, q_col2, q_col3 = st.columns(3)
 quick_query = None
-
 with q_col1:
     if st.button("🎓 Student Visa Info"):
         quick_query = "What are the requirements and process steps for a Student Visa?"
@@ -277,14 +248,12 @@ with q_col2:
 with q_col3:
     if st.button("💼 Golden Visa Options"):
         quick_query = "What is the eligibility for a Golden Visa?"
-
 if quick_query and api_key_input:
     matched_docs, context_string = retrieve_context(quick_query, vectorizer, tfidf_matrix, kb_data)
     reply = generate_grounded_response(quick_query, context_string, st.session_state.chat_session)
     st.session_state.messages.append({"role": "user", "content": quick_query})
     st.session_state.messages.append({"role": "assistant", "content": reply, "sources": matched_docs})
     st.rerun()
-
 # ─────────────────────────────────────────────
 # CHAT HISTORY
 # ─────────────────────────────────────────────
@@ -299,7 +268,6 @@ for msg in st.session_state.messages:
                     f'📎 {src["title"]}</a>',
                     unsafe_allow_html=True,
                 )
-
 # ─────────────────────────────────────────────
 # CHAT INPUT
 # ─────────────────────────────────────────────
@@ -308,10 +276,8 @@ if user_input := st.chat_input("Ask about UAE visas, driving renewals, or busine
         st.warning("Please enter your Gemini API key in the sidebar first.")
     else:
         st.session_state.messages.append({"role": "user", "content": user_input})
-
         with st.chat_message("user"):
             st.write(user_input)
-
         with st.chat_message("assistant"):
             matched_docs, context_string = retrieve_context(
                 user_input, vectorizer, tfidf_matrix, kb_data
@@ -329,13 +295,11 @@ if user_input := st.chat_input("Ask about UAE visas, driving renewals, or busine
                             f'📎 {src["title"]}</a>',
                             unsafe_allow_html=True,
                         )
-
         st.session_state.messages.append({
             "role": "assistant",
             "content": reply,
             "sources": matched_docs,
         })
-
 # ─────────────────────────────────────────────
 # FOOTER
 # ─────────────────────────────────────────────
