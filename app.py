@@ -4,6 +4,9 @@ Pure Streamlit UI. All AI/retrieval logic lives in agent.py.
 """
 import base64
 import streamlit as st
+import random  # Added for key rotation
+import os      # Added for key extraction
+
 # ── Import everything from the agent layer ──────────────────
 from agent import (
     load_knowledge_base,
@@ -22,6 +25,26 @@ st.set_page_config(
     page_icon="🇦🇪",
     layout="wide",
 )
+
+# ─────────────────────────────────────────────
+# FREE-TIER RATE LIMIT RESILIENCE & KEY ROTATION SETUP
+# ─────────────────────────────────────────────
+# Gathers all team keys from Secrets to share limits and bypass 429 rate limit exceptions
+API_KEYS_POOL = []
+for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_MEMBER_2", "GEMINI_API_KEY_MEMBER_3"]:
+    if secret_key in st.secrets and st.secrets[secret_key]:
+        API_KEYS_POOL.append(st.secrets[secret_key])
+if not API_KEYS_POOL and os.getenv("GEMINI_API_KEY"):
+    API_KEYS_POOL.append(os.getenv("GEMINI_API_KEY"))
+
+def get_rotated_api_key(manual_key: str = "") -> str:
+    """Returns a random key from the active keys pool, falling back to manual input."""
+    if manual_key:
+        return manual_key
+    if API_KEYS_POOL:
+        return random.choice(API_KEYS_POOL)
+    return ""
+
 # ─────────────────────────────────────────────
 # CSS
 # ─────────────────────────────────────────────
@@ -102,9 +125,11 @@ vectorizer, tfidf_matrix = _build_index(kb_data)
 # ─────────────────────────────────────────────
 with st.sidebar:
     st.header("🔑 Configuration")
-    if "GEMINI_API_KEY" in st.secrets:
-        api_key_input = st.secrets["GEMINI_API_KEY"]
-        st.success("🔒 API key loaded from secrets.")
+    
+    # Render active key rotation status if keys exist, or fallback to text input
+    if len(API_KEYS_POOL) > 0:
+        api_key_input = get_rotated_api_key()
+        st.success(f"🔒 Rotation Pool: {len(API_KEYS_POOL)} free keys loaded.")
     else:
         api_key_input = st.text_input(
             "Enter Google Gemini API Key",
@@ -113,6 +138,7 @@ with st.sidebar:
         )
         if not api_key_input:
             st.info("💡 Paste your Gemini API key above to begin.")
+            
     st.markdown("---")
     st.markdown("### Trusted Verification Hubs")
     st.markdown("- [Official UAE Portal](https://u.ae)")
