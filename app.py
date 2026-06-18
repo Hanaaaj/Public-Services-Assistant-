@@ -20,99 +20,186 @@ from agent import (
 st.set_page_config(
     page_title="UAE Gov Services AI Assistant",
     page_icon="🇦🇪",
-    layout="wide",
+    layout="centered",
 )
-# ─────────────────────────────────────────────
-# CSS
-# ─────────────────────────────────────────────
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.main { background-color: #F7F9FA; }
-.nav-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 30px;
-    background: white;
-    border-radius: 18px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    margin-bottom: 25px;
-}
-.nav-logo { font-size: 22px; font-weight: 700; color: #006C4C; }
-.nav-links { display: flex; gap: 28px; font-weight: 500; color: #1E293B; font-size: 14px; }
-.service-card {
-    background: white;
-    border-radius: 18px;
-    padding: 18px;
-    text-align: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-    border: 2px solid #E5E7EB;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.service-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-.service-card.active { background: #FFF7E6; border-color: #D4AF37; }
-.service-card .icon { font-size: 30px; margin-bottom: 8px; }
-.service-card .label { font-weight: 700; font-size: 14px; color: #1E293B; }
-.disclaimer {
-    background: #fff3cd;
-    padding: 12px 18px;
-    border-radius: 8px;
-    border-left: 6px solid #ffc107;
-    margin-bottom: 22px;
-    font-size: 0.86rem;
-    color: #856404;
-}
-.source-badge {
-    display: inline-block;
-    background: #e8f5e9;
-    color: #2e7d32;
-    font-size: 0.76rem;
-    padding: 3px 10px;
-    border-radius: 20px;
-    margin: 3px 4px 3px 0;
-    font-weight: 500;
-}
-</style>
-""", unsafe_allow_html=True)
-# ─────────────────────────────────────────────
-# HELPERS
-# ─────────────────────────────────────────────
-def img_to_b64(path: str) -> str:
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
-# ─────────────────────────────────────────────
-# AGENT RESOURCES  (cached at app level)
-# ─────────────────────────────────────────────
+
+# --- DISCLAIMER BANNER ---
+st.markdown(
+    """
+    <div style="background-color:#fff3cd; padding:14px; border-radius:8px; border-left: 6px solid #ffc107; margin-bottom:25px;">
+        <span style="color:#856404; font-weight:bold;">⚠️ Prototype Disclaimer:</span> 
+        <span style="color:#856404;">This application is an independent prototype built for demonstration purposes. It is NOT an official government portal. Always confirm details at the official source links provided.</span>
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
+
+SYSTEM_PROMPT = """You are the UAE Government Services Assistant, a friendly prototype AI agent that helps residents, tourists, and people relocating to the UAE understand visa and license requirements, processes, fees, and timelines.
+
+GREETING AND CONVERSATION STYLE
+- When a conversation begins, greet the user warmly before diving into business. A natural UAE-style welcome works well — for example, opening with a warm "Marhaba" or "Welcome" alongside an English greeting feels appropriate, but keep it light and optional rather than a fixed script every time.
+- Be genuinely conversational. If the user makes small talk, asks how you are, or chats casually, respond naturally and warmly before or alongside addressing their actual question — you don't need to force every message into a visa/license topic.
+- Reflect UAE hospitality and warmth in your tone: welcoming, respectful, patient, and generous with reassurance, the way a helpful local friend or government service-center staff member known for good service would speak.
+- At the same time, keep your language, references, and humor universally comfortable for people of any nationality, background, or religion. Avoid assuming the user's nationality, faith, or background, and avoid region-specific cultural references that could feel exclusionary or unfamiliar to a newcomer or tourist. Warmth should feel inclusive, not insider-only.
+- Adapt formality to the user: if they're casual, be a bit more relaxed; if they write formally, match that register. Always remain respectful regardless.
+
+YOUR ROLE
+You answer ONLY using the information provided to you in the "RETRIEVED CONTEXT" section of the user's message when present. This context comes from a curated, manually-verified knowledge base of UAE visa and license workflows. Treat your own training knowledge on this topic as unreliable and unusable for factual claims — rely solely on provided context.
+
+STRICT RULES
+1. Ground every factual claim (fees, durations, document lists, eligibility rules, step order) in the RETRIEVED CONTEXT provided. Never invent or estimate a fee, document requirement, or processing time that is not present in the context.
+2. If the RETRIEVED CONTEXT does not contain enough information to answer the user's question, say so directly and suggest checking the official source. Do not guess.
+3. If no relevant context was provided at all and the question is a factual visa/license question, do not answer from general knowledge. Say you're not certain and ask a clarifying question or point to official sources.
+4. Always end every substantive factual answer with the official source link(s) provided in the context, framed as "Verify on official source: [link]".
+5. Never state or imply that you are an official government service, system, or representative. If asked who you are or whether you're official, clarify simply that you are an independent prototype assistant, not affiliated with any UAE government entity.
+6. Do not give legal advice, immigration legal opinions, or guarantees about approval outcomes. Frame eligibility information as "based on the typical requirements" rather than a guarantee.
+7. If eligibility data indicates the user does not meet a requirement, or flags a blocker (e.g., outstanding fines), state this clearly and supportively, and explain the next concrete step to resolve it.
+
+TONE AND STYLE
+- Be warm, clear, and practical — like a knowledgeable, friendly guide explaining a bureaucratic process, not a legal document.
+- Use plain language. Avoid jargon unless it's an official term (e.g., "Emirates ID", "GDRFA") the user needs to know.
+- Structure longer answers with short steps or numbered lists when explaining a process.
+- Keep tone reassuring but accurate.
+- Do not over-elaborate. Answer what was asked, then offer to go deeper.
+
+OUTPUT FORMAT
+- Respond in natural conversational text, not raw JSON.
+- When listing steps, documents, or fees, use a clearly structured short list.
+
+DISCLAIMER
+If the user asks something that suggests they think this is an official government tool, gently clarify: "Just to set expectations — I'm a prototype assistant, not an official UAE government service. Always confirm details with the official source link before taking action."
+"""
+
+# Load Local Knowledge Base
 @st.cache_data
-def _load_kb():
-    return load_knowledge_base()
+def load_knowledge_base():
+    if os.path.exists("knowledge_base.json"):
+        with open("knowledge_base.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+kb_data = load_knowledge_base()
+
+# Build TF-IDF Retrieval Index
 @st.cache_resource
-def _build_index(_data):
-    return build_retrieval_index(_data)
+def build_retrieval_index(_data):
+    if not _data:
+        return None, None
+    documents = []
+    for item in _data:
+        text_blob = f"{item['category']} {item['subcategory']} {item['title']} {item['eligibility']} {item['documents']} {item['steps']}"
+        documents.append(text_blob.lower())
+
+    vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = vectorizer.fit_transform(documents)
+    return vectorizer, tfidf_matrix
+
+vectorizer, tfidf_matrix = build_retrieval_index(kb_data)
+
+# Retrieval Function
+def retrieve_context(query, vectorizer, tfidf_matrix, data, top_n=2, threshold=0.12):
+    if not vectorizer or tfidf_matrix is None:
+        return [], ""
+
+    query_vec = vectorizer.transform([query.lower()])
+    similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
+    top_indices = similarities.argsort()[::-1][:top_n]
+
+    results = []
+    context_str = ""
+    for idx in top_indices:
+        if similarities[idx] >= threshold:
+            item = data[idx]
+            results.append(item)
+            context_str += (
+                f"### {item['title']} ({item['category']}/{item['subcategory']})\n"
+                f"Eligibility: {item['eligibility']}\n"
+                f"Required Documents: {item['documents']}\n"
+                f"Process Steps: {item['steps']}\n"
+                f"Fees: {item['fees']}\n"
+                f"Processing Time: {item['processing_time']}\n"
+                f"Official Link: {item['official_url']}\n\n"
+            )
+    return results, context_str
+
+
 @st.cache_resource
-def _get_model(api_key: str):
-    return get_gemini_model(api_key)
-kb_data = _load_kb()
-vectorizer, tfidf_matrix = _build_index(kb_data)
-# ─────────────────────────────────────────────
-# SIDEBAR
-# ─────────────────────────────────────────────
+def get_model(api_key):
+    """Initialize the Gemini model once per API key."""
+    genai.configure(api_key=api_key)
+    return genai.GenerativeModel(
+        model_name="gemini-2.5-flash",
+        system_instruction=SYSTEM_PROMPT
+    )
+
+
+def get_chat_session(api_key):
+    """
+    Maintain one persistent chat session in Streamlit session_state so the
+    model has real conversational memory, instead of a stateless one-shot
+    call per message.
+    """
+    if "chat_session" not in st.session_state:
+        model = get_model(api_key)
+        st.session_state.chat_session = model.start_chat(history=[])
+    return st.session_state.chat_session
+
+
+def generate_grounded_response(query, context_string, api_key):
+    if not api_key:
+        return "⚠️ Missing API key. Please add your Gemini API key in the sidebar."
+
+    try:
+        chat = get_chat_session(api_key)
+
+        if context_string:
+            full_message = (
+                f"RETRIEVED CONTEXT:\n{context_string}\n\n"
+                f"USER QUESTION:\n{query}"
+            )
+        else:
+            # No matching KB entry — let the model handle small talk or
+            # ask for clarification, per the system prompt's rules.
+            full_message = (
+                f"RETRIEVED CONTEXT:\n(none found for this message)\n\n"
+                f"USER QUESTION:\n{query}"
+            )
+
+        response = chat.send_message(full_message)
+        return response.text
+    except Exception as e:
+        return f"Something went wrong while generating a response: {str(e)}"
+
+
+def generate_greeting(api_key):
+    """Ask the model to produce the opening greeting itself, so tone stays consistent with the system prompt instead of being hardcoded."""
+    try:
+        chat = get_chat_session(api_key)
+        response = chat.send_message(
+            "SYSTEM_EVENT: A new user has just opened the chat. No question has been asked yet. "
+            "Greet them warmly and briefly introduce what you can help with (UAE visas and licenses)."
+        )
+        return response.text
+    except Exception as e:
+        return f"Marhaba! Welcome 🇦🇪 — I can help with UAE visa and license questions. (Greeting generation error: {str(e)})"
+
+
+# --- UI HEADER ---
+st.title("UAE Government Services Assistant")
+st.caption("Prototype RAG-based assistant for visas and licenses")
+
+# Sidebar
 with st.sidebar:
     st.header("🔑 Configuration")
+
     if "GEMINI_API_KEY" in st.secrets:
         api_key_input = st.secrets["GEMINI_API_KEY"]
         st.success("🔒 API key loaded from secrets.")
     else:
-        api_key_input = st.text_input(
-            "Enter Google Gemini API Key",
-            type="password",
-            help="Free-tier key from Google AI Studio.",
-        )
+        api_key_input = st.text_input("Enter Google Gemini API Key", type="password", help="Free-tier key from Google AI Studio.")
         if not api_key_input:
             st.info("💡 Paste your Gemini API key above to begin.")
+
     st.markdown("---")
     st.markdown("### Trusted Verification Hubs")
     st.markdown("- [Official UAE Portal](https://u.ae)")
@@ -120,157 +207,47 @@ with st.sidebar:
     st.markdown("- [GDRFA Portal](https://gdrfad.gov.ae)")
     st.markdown("- [RTA Portal](https://rta.ae)")
     st.markdown("- [MOHRE Portal](https://mohre.gov.ae)")
-    st.markdown("---")
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.messages = []
-        st.session_state.pop("chat_session", None)
-        st.rerun()
-# ─────────────────────────────────────────────
-# DISCLAIMER BANNER
-# ─────────────────────────────────────────────
-st.markdown("""
-<div class="disclaimer">
-    <strong>⚠️ Prototype Disclaimer:</strong>
-    This application is an independent prototype built for demonstration purposes.
-    It is <strong>NOT</strong> an official government portal.
-    Always confirm details at the official source links provided.
-</div>
-""", unsafe_allow_html=True)
-# ─────────────────────────────────────────────
-# NAV BAR
-# ─────────────────────────────────────────────
-st.markdown("""
-<div class="nav-bar">
-    <div class="nav-logo">🇦🇪 UAE Gov Assistant</div>
-    <div class="nav-links">
-        <span>Home</span>
-        <span>Visa Services</span>
-        <span>Driving License</span>
-        <span>Business License</span>
-        <span>About</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-# ─────────────────────────────────────────────
-# HERO BANNER
-# ─────────────────────────────────────────────
-try:
-    hero_enc = img_to_b64("hero_banner2.png")
-    st.markdown(f"""
-    <div style="position:relative; width:100%; border-radius:25px; overflow:hidden; margin-bottom:28px;">
-        <img src="data:image/png;base64,{hero_enc}" style="width:100%; border-radius:25px;">
-        <div style="position:absolute; top:18%; left:6%; color:black; max-width:60%;">
-            <div style="font-size:42px; font-weight:800; line-height:1.05; margin-bottom:10px;">
-                UAE Government<br>Services Assistant
-            </div>
-            <div style="font-size:18px; font-weight:500; line-height:1.3; color:#111;">
-                AI-Powered Guidance for Visas, Licenses,<br>and Government Services
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-except FileNotFoundError:
-    st.markdown("""
-    <div style="background:linear-gradient(135deg,#006C4C,#004d35);
-                border-radius:25px; padding:50px 40px; margin-bottom:28px; color:white;">
-        <div style="font-size:38px; font-weight:800; margin-bottom:10px;">
-            🇦🇪 UAE Government Services Assistant
-        </div>
-        <div style="font-size:17px; opacity:0.9;">
-            AI-Powered Guidance for Visas, Licenses, and Government Services
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-# ─────────────────────────────────────────────
-# QUICK SERVICE CARDS
-# ─────────────────────────────────────────────
-st.markdown("<div style='font-size:22px; font-weight:700; color:#1E293B; margin-bottom:14px;'>Quick Services</div>",
-            unsafe_allow_html=True)
-services = [
-    ("🛂", "Visa Services",    True),
-    ("🚗", "Driving License",  False),
-    ("🏢", "Business License", False),
-    ("🔄", "Renewals",         False),
-    ("❓", "FAQs",             False),
-]
-cols = st.columns(len(services))
-for col, (icon, label, active) in zip(cols, services):
-    with col:
-        card_class = "service-card active" if active else "service-card"
-        st.markdown(f"""
-        <div class="{card_class}">
-            <div class="icon">{icon}</div>
-            <div class="label">{label}</div>
-        </div>
-        """, unsafe_allow_html=True)
-st.markdown("<br>", unsafe_allow_html=True)
-# ─────────────────────────────────────────────
-# SERVICE BANNER (optional second image)
-# ─────────────────────────────────────────────
-try:
-    svc_enc = img_to_b64("service_banner1.png")
-    st.markdown(f"""
-    <div style="position:relative; width:100%; border-radius:20px; overflow:hidden; margin-bottom:24px;">
-        <img src="data:image/png;base64,{svc_enc}" style="width:100%; display:block;">
-        <div style="position:absolute; top:10%; left:50%; transform:translateX(-50%);
-                    padding:10px 20px; border-radius:12px; white-space:nowrap;">
-            <h2 style="color:black; margin:0; font-size:26px; font-weight:700;">Main AI Chat Section</h2>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-except FileNotFoundError:
-    st.markdown("---")
-    st.markdown("### 💬 AI Chat")
-# ─────────────────────────────────────────────
-# SESSION STATE
-# ─────────────────────────────────────────────
+
+# Chat history in session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if api_key_input and "chat_session" not in st.session_state:
-    model = _get_model(api_key_input)
-    st.session_state.chat_session = start_chat_session(model)
-# Auto-greeting on first open
+
+# --- GREET FIRST, BEFORE ANY USER INPUT ---
 if not st.session_state.messages and api_key_input:
-    greeting = generate_greeting(st.session_state.chat_session)
+    greeting = generate_greeting(api_key_input)
     st.session_state.messages.append({"role": "assistant", "content": greeting, "sources": []})
-# ─────────────────────────────────────────────
-# QUICK QUERY BUTTONS
-# ─────────────────────────────────────────────
+
+# Quick Query Buttons
 st.markdown("### ⚡ Quick Queries")
-q_col1, q_col2, q_col3 = st.columns(3)
+col1, col2, col3 = st.columns(3)
 quick_query = None
-with q_col1:
+
+with col1:
     if st.button("🎓 Student Visa Info"):
         quick_query = "What are the requirements and process steps for a Student Visa?"
-with q_col2:
+with col2:
     if st.button("🚗 Convert Driving License"):
         quick_query = "How can I convert my foreign driving license to a UAE license?"
-with q_col3:
+with col3:
     if st.button("💼 Golden Visa Options"):
         quick_query = "What is the eligibility for a Golden Visa?"
+
 if quick_query and api_key_input:
-    matched_docs, context_string = retrieve_context(quick_query, vectorizer, tfidf_matrix, kb_data)
-    reply = generate_grounded_response(quick_query, context_string, st.session_state.chat_session)
     st.session_state.messages.append({"role": "user", "content": quick_query})
+    matched_docs, context_string = retrieve_context(quick_query, vectorizer, tfidf_matrix, kb_data)
+    reply = generate_grounded_response(quick_query, context_string, api_key_input)
     st.session_state.messages.append({"role": "assistant", "content": reply, "sources": matched_docs})
-    st.rerun()
-# ─────────────────────────────────────────────
-# CHAT HISTORY
-# ─────────────────────────────────────────────
+
+# Render chat history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
         if msg.get("sources") and msg["role"] == "assistant":
             st.markdown("**Verify on official source:**")
             for src in msg["sources"]:
-                st.markdown(
-                    f'<a href="{src["official_url"]}" target="_blank" class="source-badge">'
-                    f'📎 {src["title"]}</a>',
-                    unsafe_allow_html=True,
-                )
-# ─────────────────────────────────────────────
-# CHAT INPUT
-# ─────────────────────────────────────────────
+                st.markdown(f"- [{src['title']}]({src['official_url']})")
+
+# Chat input
 if user_input := st.chat_input("Ask about UAE visas, driving renewals, or business licenses..."):
     if not api_key_input:
         st.warning("Please enter your Gemini API key in the sidebar first.")
@@ -278,36 +255,20 @@ if user_input := st.chat_input("Ask about UAE visas, driving renewals, or busine
         st.session_state.messages.append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.write(user_input)
+
         with st.chat_message("assistant"):
-            matched_docs, context_string = retrieve_context(
-                user_input, vectorizer, tfidf_matrix, kb_data
-            )
+            matched_docs, context_string = retrieve_context(user_input, vectorizer, tfidf_matrix, kb_data)
             with st.spinner("Thinking..."):
-                reply = generate_grounded_response(
-                    user_input, context_string, st.session_state.chat_session
-                )
+                reply = generate_grounded_response(user_input, context_string, api_key_input)
                 st.write(reply)
                 if matched_docs:
                     st.markdown("**Verify on official source:**")
                     for src in matched_docs:
-                        st.markdown(
-                            f'<a href="{src["official_url"]}" target="_blank" class="source-badge">'
-                            f'📎 {src["title"]}</a>',
-                            unsafe_allow_html=True,
-                        )
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": reply,
-            "sources": matched_docs,
-        })
-# ─────────────────────────────────────────────
-# FOOTER
-# ─────────────────────────────────────────────
-st.markdown("---")
-st.markdown(
-    "<div style='text-align:center; font-size:0.78rem; color:#999;'>"
-    "🏆 Hackathon Prototype · Not affiliated with any UAE government authority · "
-    "Always verify at <a href='https://u.ae' target='_blank'>u.ae</a>"
-    "</div>",
-    unsafe_allow_html=True,
-)
+                        st.markdown(f"- [{src['title']}]({src['official_url']})")
+
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": reply,
+                    "sources": matched_docs
+                })
+
