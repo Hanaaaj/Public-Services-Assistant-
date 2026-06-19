@@ -199,6 +199,19 @@ else:
         margin-bottom: 40px;
         overflow: hidden;
     }
+
+    /* Add this inside your <style> tags */
+.hero-wrapper .custom-nav-links a {
+    color: #FFFFFF !important;
+    opacity: 0.8;
+}
+.hero-wrapper .custom-nav-links span.active {
+    color: #FBBF24 !important; /* Match your golden yellow hero accent */
+    border-bottom: 2px solid #FBBF24 !important;
+}
+.hero-wrapper .brand-name {
+    color: #FFFFFF !important;
+}
     
     /* Sliding Engine (3 Images example) */
     .hero-slideshow {
@@ -508,7 +521,7 @@ else:
         </div>
     </div>
     """
-    st.html(navbar_html)
+    # st.html(navbar_html)
 
     # ─────────────────────────────────────────────
     # PARSE ACTION & LANGUAGE HOOKS
@@ -553,6 +566,19 @@ else:
         
         <!-- 2. Cinematic Gradient Guard for Text Legibility -->
         <div class="hero-overlay"></div>
+
+        {navbar_html}
+        
+        <div class="hero-left-content" style="margin-top: auto; margin-bottom: auto;">
+            <div class="hero-main-title">UAE Government<br><span>Services Assistant</span></div>
+            <div class="hero-description">
+                Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.
+            </div>
+            <div class="hero-btn-group">
+                <a href="?action=start_chat" target="_self" class="btn-dynamic-chat">Start Dynamic Chat &nbsp;➔</a>
+                <a href="#verified-library" class="btn-browse-library">Browse Verification Library</a>
+            </div>
+        </div>
         
         <!-- 3. Absolute Positioned Content Overlays -->
         <div class="hero-content-container">
