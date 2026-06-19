@@ -55,6 +55,18 @@ if "lang" not in st.session_state:
  
 t = UI[st.session_state.lang]         
 is_arabic = st.session_state.lang == "Arabic"
+
+# ─────────────────────────────────────────────
+# INITIALIZE AGENT RETRIEVAL PIPELINE SYSTEM DATA
+# ─────────────────────────────────────────────
+@st.cache_resource
+def initialize_agent_backend():
+    # Safely load the dataset, using fallback defaults inside agent.py if missing
+    kb_data = load_knowledge_base()
+    vectorizer, tfidf_matrix = build_retrieval_index(kb_data)
+    return kb_data, vectorizer, tfidf_matrix
+
+kb_data, vectorizer, tfidf_matrix = initialize_agent_backend()
  
 # ─────────────────────────────────────────────
 # ADVANCED CUSTOM CSS FOR TARGET DESIGN
@@ -72,7 +84,7 @@ html, body, [class*="css"], .stApp {
 /* Fix main padding */
 .block-container {
     padding-top: 0rem !important;
-    padding-bottom: 3rem !important;
+    padding-bottom: 0rem !important;
     max-width: 1300px !important;
 }
 
@@ -384,8 +396,8 @@ st.markdown(f"""
 # ─────────────────────────────────────────────
 with st.sidebar:
     st.header(t["config_header"])
+    api_key_input = get_rotated_api_key()
     if len(API_KEYS_POOL) > 0:
-        api_key_input = get_rotated_api_key()
         st.success(t["api_loaded"])
     else:
         api_key_input = st.text_input(t["api_label"], type="password", help=t["api_help"])
@@ -495,7 +507,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
  
 if api_key_input and "chat_session" not in st.session_state:
-    model = _get_model(api_key_input)
+    model = get_gemini_model(api_key_input) # FIXED: Changed from _get_model to matched imported tool
     st.session_state.chat_session = start_chat_session(model)
  
 if not st.session_state.messages:
@@ -736,13 +748,11 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-
 # ─────────────────────────────────────────────
-# PROTOTYPE DARK BOTTOM FOOTER BAR (Verbatim layout from image_4b5537.png)
+# PROTOTYPE DARK BOTTOM FOOTER BAR
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
-/* Force canvas container to drop out full bleed to the window edge */
 .custom-footer-bar {
     background-color: #0B132B;
     color: #94A3B8;
@@ -806,9 +816,3 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-# ─────────────────────────────────────────────
-# FOOTER
-# ─────────────────────────────────────────────
-st.markdown("<br><hr>", unsafe_allow_html=True)
-st.markdown(f"<div style='text-align:center; font-size:12px; color:#6B7280; padding-bottom:20px;'>{t['footer']}</div>", unsafe_allow_html=True)
