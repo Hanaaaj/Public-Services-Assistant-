@@ -28,6 +28,23 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# ─────────────────────────────────────────────
+# STATE TRACKING INITIALIZATION (Must be done first)
+# ─────────────────────────────────────────────
+if "started" not in st.session_state:
+    st.session_state.started = False
+
+if "lang" not in st.session_state:
+    st.session_state.lang = "English"
+
+if "selected_library_filter" not in st.session_state:
+    st.session_state.selected_library_filter = "All"
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+
 # ─────────────────────────────────────────────
 # FREE-TIER RATE LIMIT RESILIENCE & KEY ROTATION SETUP
 # ─────────────────────────────────────────────
@@ -47,22 +64,6 @@ def get_rotated_api_key(manual_key: str = "") -> str:
     if "active_api_key" not in st.session_state:
         st.session_state.active_api_key = random.choice(API_KEYS_POOL) if API_KEYS_POOL else ""
     return st.session_state.active_api_key
- 
-
-# ─────────────────────────────────────────────
-# CONDITIONAL VIEW ROUTING
-# ─────────────────────────────────────────────
-if not st.session_state.started:
-    # 1. SHOWS YOUR WELCOME SCREEN CARD
-    show_welcome_screen()
-
-else:
- # ─────────────────────────────────────────────
-# LANGUAGE STATE
-# ─────────────────────────────────────────────
-if "lang" not in st.session_state:
-    st.session_state.lang = "English"
- 
 t = UI[st.session_state.lang]         
 is_arabic = st.session_state.lang == "Arabic"
 
@@ -77,11 +78,15 @@ def initialize_agent_backend():
 
 kb_data, vectorizer, tfidf_matrix = initialize_agent_backend()
 
-# Initialize Session State Router
-if "started" not in st.session_state:
-    st.session_state.started = False
- 
-st.html("""
+# ─────────────────────────────────────────────
+# CONDITIONAL VIEW ROUTING
+# ─────────────────────────────────────────────
+if not st.session_state.started:
+    # 1. SHOWS YOUR WELCOME SCREEN CARD
+    show_welcome_screen()
+
+else:
+ st.html("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&family=Cairo:wght=300;400;600;700;800&display=swap');
  
