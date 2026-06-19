@@ -539,8 +539,9 @@ active_visa = "active" if current_filter == "Visa Services" else ""
 active_driving = "active" if current_filter == "Driving License" else ""
 active_business = "active" if current_filter == "Business License" else ""
 
+# Adjusted padding here to pull navbar slightly down, but tightly seated above the hero section
 navbar_html = f"""
-<div style="display: flex; justify-content: space-between; align-items: center; padding: 65px 0 5px 0; margin-bottom: 20px; width: 120%;">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0 5px 0; margin-bottom: 20px; width: 100%;">
     
     <div class="brand-block" style="flex: 1; display: flex; justify-content: flex-start;">
         <div class="brand-badge">AE</div>
@@ -585,7 +586,6 @@ navbar_html = f"""
     </div>
     
 </div>
-<div style="margin-bottom: 25px;"></div>
 """
 st.html(navbar_html)
 
@@ -935,45 +935,14 @@ st.html("""
     font-size: 15px;
     opacity: 0.8;
 }
-.footer-title-text strong {
-    color: #FFFFFF;
-    display: block;
-    font-size: 14px;
-    margin-bottom: 2px;
-}
-.footer-title-text span {
-    color: #475569;
-    font-size: 12px;
-}
-.footer-right-side {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-.session-tag-highlight {
-    color: #10B981;
-    font-family: monospace;
-    font-weight: 700;
-}
-.footer-link-anchor {
-    color: #475569;
-    text-decoration: underline;
-    cursor: pointer;
-}
 </style>
-
 <div class="custom-footer-bar">
     <div class="footer-left-side">
-        <div class="footer-logo-badge">AE</div>
-        <div class="footer-title-text">
-            <strong>UAE Gov services AI Assistant Prototype</strong>
-            <span>Decoupled UI and Agent Full Stack React/Express Architecture</span>
-        </div>
+        <span class="footer-logo-badge">AE</span>
+        <span>© 2026 Sandbox UI Research Project. Grounded Model Assistance Engine.</span>
     </div>
-    <div class="footer-right-side">
-        <div>Active Session: <span class="session-tag-highlight">session_v3exrrfa3</span></div>
-        <div style="color: #475569;">•</div>
-        <a class="footer-link-anchor" href="https://u.ae" target="_blank">Official Directory Portal</a>
+    <div style="display: flex; gap: 24px;">
+        <span style="color: #64748B;">Internal Use Only</span>
     </div>
 </div>
 """)
