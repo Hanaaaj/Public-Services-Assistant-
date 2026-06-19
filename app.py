@@ -80,15 +80,12 @@ html, body, [class*="css"], .stApp {
     font-family: 'Inter', sans-serif; 
     background-color: #FDFDFB !important;
 }
-/* Force all text inside chat messages to inherit black/dark charcoal color */
-[data-testid="stChatMessage"] {
+
+/* Force all text inside chat messages to remain visible black/charcoal */
+[data-testid="stChatMessage"], [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] div {
     color: #111827 !important;
 }
 
-/* Ensure paragraph tags inside chat elements also stay black */
-[data-testid="stChatMessage"] p {
-    color: #111827 !important;
-}
 /* Fix main padding */
 .block-container {
     padding-top: 0rem !important;
@@ -515,7 +512,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
  
 if api_key_input and "chat_session" not in st.session_state:
-    model = get_gemini_model(api_key_input) # FIXED: Changed from _get_model to matched imported tool
+    model = get_gemini_model(api_key_input)
     st.session_state.chat_session = start_chat_session(model)
  
 if not st.session_state.messages:
@@ -824,5 +821,3 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-
