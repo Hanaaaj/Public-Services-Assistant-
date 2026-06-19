@@ -183,18 +183,6 @@ html, body, [class*="css"], .stApp {
     background-size: 24px 24px;
 }
 .hero-left { max-width: 55%; z-index: 2; }
-.hero-badge {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    display: inline-block;
-    margin-bottom: 20px;
-    color: #A7F3D0;
-}
 .hero-title {
     font-size: 44px;
     font-weight: 800;
@@ -208,6 +196,24 @@ html, body, [class*="css"], .stApp {
     line-height: 1.5;
     color: #D1FAE5;
     opacity: 0.9;
+    margin-bottom: 24px;
+}
+
+/* Hero Action CTA Button Injection Override */
+div.stButton > button.hero-cta-btn {
+    background-color: #FBBF24 !important;
+    color: #0A3C2C !important;
+    font-weight: 700 !important;
+    border-radius: 12px !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    font-size: 15px !important;
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+    box-shadow: 0 4px 14px rgba(251, 191, 36, 0.3) !important;
+}
+div.stButton > button.hero-cta-btn:hover {
+    background-color: #FDE047 !important;
+    transform: translateY(-1px);
 }
 
 /* System Health Card inside Hero */
@@ -451,31 +457,41 @@ with cols_lang[1]:
         st.rerun()
 
 # ─────────────────────────────────────────────
-# EMERALD HERO BANNER SYSTEM 
+# EMERALD HERO BANNER SYSTEM WITH INTEGRATED BUTTON
 # ─────────────────────────────────────────────
-hero_html = f"""
-<div class="hero-container">
-    <div class="hero-left">
-        <div class="hero-badge">AE Powered by Gemini AI & Grounded Retrieval</div>
-        <div class="hero-title">UAE Government<br><span>Services Assistant</span></div>
-        <div class="hero-subtitle">Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.</div>
-    </div>
-    <div class="system-health-card">
-        <div class="health-header">
-            <div class="health-title">SYSTEM HEALTH</div>
-            <div class="health-status">SECURE</div>
+# Setup structural layout overlaying the interactive button neatly inside the container block
+hero_placeholder = st.container()
+with hero_placeholder:
+    st.markdown(f"""
+    <div class="hero-container" style="margin-bottom: 0px;">
+        <div class="hero-left">
+            <div class="hero-title">UAE Government<br><span>Services Assistant</span></div>
+            <div class="hero-subtitle">Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.</div>
+            <div id="hero-cta-anchor"></div>
         </div>
-        <div class="health-line fill"></div>
-        <div class="health-line fill-short"></div>
-        <div class="health-line"></div>
-        <div class="health-footer">
-            <span style="color:#94A3B8;">Server-side retrieval:</span>
-            <span style="color:#FBBF24; font-family:monospace; font-weight:700;">TF-IDF Vectorizer</span>
+        <div class="system-health-card">
+            <div class="health-header">
+                <div class="health-title">SYSTEM HEALTH</div>
+                <div class="health-status">SECURE</div>
+            </div>
+            <div class="health-line fill"></div>
+            <div class="health-line fill-short"></div>
+            <div class="health-line"></div>
+            <div class="health-footer">
+                <span style="color:#94A3B8;">Server-side retrieval:</span>
+                <span style="color:#FBBF24; font-family:monospace; font-weight:700;">TF-IDF Vectorizer</span>
+            </div>
         </div>
     </div>
-</div>
-"""
-st.markdown(hero_html, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
+    # Place the actual interactive Streamlit button precisely on the canvas layout
+    btn_col, _ = st.columns([3, 7])
+    with btn_col:
+        st.markdown('<div style="margin-top: -95px; margin-left: 50px; z-index: 99; position: relative;">', unsafe_allow_html=True)
+        if st.button("Start Dynamic Chat", key="hero_start_chat", help="Jump directly to conversational system log input", class_name="hero-cta-btn"):
+            st.markdown("""<script>document.getElementById("chat-section-header").scrollIntoView({behavior: "smooth"});</script>""", unsafe_allow_html=True)
+        st.markdown('</div><div style="margin-bottom: 40px;"></div>', unsafe_allow_html=True)
  
 # ─────────────────────────────────────────────
 # DYNAMIC CONFIGURABLE CARDS LAYOUT
@@ -531,7 +547,7 @@ if not st.session_state.messages:
 chat_col, sidebar_col = st.columns([2, 1])
 
 with chat_col:
-    st.markdown(f"#### 🤖 {t['chat_section']}")
+    st.markdown(f'<div id="chat-section-header">#### 🤖 {t["chat_section"]}</div>', unsafe_allow_html=True)
     
     # Render Quick Action Queries inside conversational window
     st.markdown(f"<span style='font-size:13px; font-weight:600; color:#6B7280;'>{t['quick_queries']}</span>", unsafe_allow_html=True)
@@ -571,7 +587,7 @@ with chat_col:
             st.rerun()
 
 with sidebar_col:
-    # Prototype Disclaimer Card (Replaces Agent Context details)
+    # Prototype Disclaimer Card
     st.markdown(f"""
     <div class="side-disclaimer">
         <div class="side-disclaimer-icon">🛈</div>
