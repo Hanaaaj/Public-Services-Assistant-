@@ -1,6 +1,6 @@
 """
 app.py — UAE Government Services Assistant
-Pure Streamlit UI custom-tailored to a pixel-perfect design system matching image_484122.png.
+Pure Streamlit UI custom-tailored to a pixel-perfect design system matching.
 """
 import base64
 import streamlit as st
@@ -48,16 +48,10 @@ def get_rotated_api_key(manual_key: str = "") -> str:
     return st.session_state.active_api_key
  
 # ─────────────────────────────────────────────
-# STATE INITIALIZATION
+# LANGUAGE STATE
 # ─────────────────────────────────────────────
 if "lang" not in st.session_state:
     st.session_state.lang = "English"
-
-if "selected_library_filter" not in st.session_state:
-    st.session_state.selected_library_filter = "All"
-
-if "messages" not in st.session_state:
-    st.session_state.messages = []
  
 t = UI[st.session_state.lang]         
 is_arabic = st.session_state.lang == "Arabic"
@@ -93,7 +87,7 @@ html, body, [class*="css"], .stApp {
 
 /* Fix main padding */
 .block-container {
-    padding-top: 1rem !important;
+    padding-top: 2rem !important;
     padding-bottom: 0rem !important;
     max-width: 1300px !important;
 }
@@ -119,142 +113,55 @@ html, body, [class*="css"], .stApp {
     line-height: 1.5;
 }
 
-/* ─────────────────────────────────────────────
-   PIXEL-PERFECT NAVBAR SYSTEM (Matches image_484122.png)
-   ───────────────────────────────────────────── */
-.custom-header-wrapper {
+/* Elegant Custom Top Header Bar */
+.custom-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 0;
-    margin-bottom: 24px;
-    border-bottom: 1px solid #F3F4F6;
-    background-color: #FDFDFB;
+    padding: 15px 0;
+    margin-bottom: 20px;
 }
-.brand-block-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-.brand-logo-icon-box {
-    background-color: #045A3E;
-    color: #FFFFFF;
-    font-weight: 800;
-    font-size: 17px;
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: -0.5px;
-    box-shadow: 0 4px 10px rgba(4, 90, 62, 0.15);
-}
-.brand-title-text-group {
-    display: flex;
-    flex-direction: column;
-}
-.brand-main-title-label {
-    font-size: 21px;
-    font-weight: 700;
-    color: #033C2A;
-    line-height: 1.15;
-}
-.brand-subtitle-tagline {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #8E9AA8;
-    margin-top: 2px;
-    font-weight: 600;
-}
-.center-nav-links-container {
-    display: flex;
-    gap: 32px;
-    align-items: center;
-}
-.nav-link-item-anchor {
-    font-size: 14.5px;
-    font-weight: 500;
-    color: #4B5563 !important;
-    text-decoration: none !important;
-    padding: 6px 0;
-    position: relative;
-    transition: color 0.15s ease;
-}
-.nav-link-item-anchor:hover {
-    color: #045A3E !important;
-}
-.nav-link-item-anchor.active-nav-tab {
-    color: #045A3E !important;
-    font-weight: 700;
-}
-.nav-link-item-anchor.active-nav-tab::after {
-    content: "";
-    position: absolute;
-    bottom: -6px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background-color: #045A3E;
-    border-radius: 2px;
-}
-.right-actions-pill-group {
+.brand-block {
     display: flex;
     align-items: center;
     gap: 12px;
 }
-.pill-lang-switcher-btn {
-    border: 1px solid #10B981;
-    background: #FFFFFF;
-    color: #111827 !important;
-    font-size: 13px;
+.brand-badge {
+    background-color: #0F5A41;
+    color: white;
     font-weight: 700;
-    padding: 8px 16px;
-    border-radius: 10px;
-    text-decoration: none !important;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: background-color 0.15s;
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: 12px;
 }
-.pill-lang-switcher-btn:hover {
-    background-color: #F0FDF4;
+.brand-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.1;
 }
-.pill-status-live-indicator {
-    background-color: #E6FBF3;
-    color: #045A3E;
-    font-size: 12.5px;
+.brand-tag {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6B7280;
+}
+.custom-nav-links {
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4B5563;
+}
+.custom-nav-links span.active {
+    color: #0F5A41;
     font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-.status-green-dot-pulse {
-    width: 8px;
-    height: 8px;
-    background-color: #10B981;
-    border-radius: 50%;
-    display: inline-block;
-}
-.pill-reset-session-action-btn {
-    background-color: #F1F5F9;
-    color: #334155 !important;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 10px;
-    text-decoration: none !important;
-    transition: background-color 0.15s;
-}
-.pill-reset-session-action-btn:hover {
-    background-color: #E2E8F0;
+    border-bottom: 2px solid #0F5A41;
+    padding-bottom: 4px;
 }
 
 /* ─────────────────────────────────────────────
-   UNIFIED HERO CONTAINER SYSTEM (Matches image_48a267.jpg)
+   UNIFIED HERO CONTAINER SYSTEM
    ───────────────────────────────────────────── */
 .hero-wrapper {
     background: radial-gradient(circle at 80% 20%, #115E46 0%, #063728 100%);
@@ -269,6 +176,7 @@ html, body, [class*="css"], .stApp {
     align-items: center;
     overflow: hidden;
 }
+/* Blueprint Grid Overlay Line Accentuation */
 .hero-wrapper::before {
     content: "";
     position: absolute;
@@ -541,56 +449,13 @@ if is_arabic:
     st.markdown("""
     <style>
     html, body, [class*="css"], .stApp { font-family: 'Cairo', sans-serif !important; direction: rtl; text-align: right; }
-    .custom-header-wrapper, .hero-wrapper, .library-header-row { flex-direction: row-reverse; }
+    .custom-header, .hero-wrapper, .library-header-row { flex-direction: row-reverse; }
     .custom-table { text-align: right; }
     .hub-link-item { flex-direction: row-reverse; }
     .side-disclaimer { flex-direction: row-reverse; }
     .hero-btn-group { flex-direction: row-reverse; }
-    .center-nav-links-container { flex-direction: row-reverse; }
-    .right-actions-pill-group { flex-direction: row-reverse; }
     </style>
     """, unsafe_allow_html=True)
-
-# ─────────────────────────────────────────────
-# PARSE ROUTING INTERACTION HOOKS FROM URL QUERY PARAMS
-# ─────────────────────────────────────────────
-url_params = st.query_params
-
-# Handle Filter Intercepts from Header Clicks
-if "filter" in url_params:
-    requested_filter = url_params.get("filter")
-    if requested_filter in ["All", "Visa Services", "Driving License", "Business License"]:
-        st.session_state.selected_library_filter = requested_filter
-    st.query_params.clear()
-    st.rerun()
-
-# Handle Language Changes from Header Switcher
-if url_params.get("action") == "toggle_lang":
-    st.session_state.lang = "Arabic" if st.session_state.lang == "English" else "English"
-    st.session_state.pop("chat_session", None)
-    st.session_state.messages = []
-    st.query_params.clear()
-    st.rerun()
-
-# Handle Global Resets from Header Actions
-if url_params.get("action") == "reset":
-    st.session_state.messages = []
-    st.session_state.selected_library_filter = "All"
-    st.session_state.pop("chat_session", None)
-    st.session_state.pop("active_api_key", None)
-    st.query_params.clear()
-    st.rerun()
-
-# Handle Start Chat from Hero CTA Buttons
-if url_params.get("action") == "start_chat":
-    st.query_params.clear()
-    if "messages" in st.session_state and len(st.session_state.messages) <= 1:
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": "Dynamic chat initialized! How can I guide you through UAE government services today?",
-            "sources": []
-        })
-    st.rerun()
 
 # ─────────────────────────────────────────────
 # CONFIGURATION/SIDEBAR ACCESS
@@ -603,54 +468,65 @@ with st.sidebar:
     else:
         api_key_input = st.text_input(t["api_label"], type="password", help=t["api_help"])
         if not api_key_input: st.info(t["api_info"])
-
+ 
+    if st.button(t["clear_chat"]):
+        st.session_state.messages = []
+        st.session_state.pop("chat_session", None)
+        st.session_state.pop("active_api_key", None)
+        st.rerun()
+ 
 # ─────────────────────────────────────────────
-# PIXEL-PERFECT NAVIGATION HEADER DESIGN (Matches image_484122.png)
+# CUSTOM NAVBAR UI WITH INLINE LANG TOGGLE
 # ─────────────────────────────────────────────
-current_tab = st.session_state.selected_library_filter
-
 nav_html = f"""
-<div class="custom-header-wrapper">
-    <!-- Brand Block Left -->
-    <div class="brand-block-left">
-        <div class="brand-logo-icon-box">AE</div>
-        <div class="brand-title-text-group">
-            <div class="brand-main-title-label">UAE Gov Assistant</div>
-            <div class="brand-subtitle-tagline">PROTOTYPE AGENT</div>
+<div class="custom-header">
+    <div class="brand-block">
+        <div class="brand-badge">AE</div>
+        <div>
+            <div class="brand-name">{t["nav_logo"]}</div>
+            <div class="brand-tag">Prototype Agent</div>
         </div>
     </div>
-    
-    <!-- Central Navigation Menu Group -->
-    <div class="center-nav-links-container">
-        <a href="?filter=All" target="_self" class="nav-link-item-anchor {'active-nav-tab' if current_tab == 'All' else ''}">All</a>
-        <a href="?filter=Visa+Services" target="_self" class="nav-link-item-anchor {'active-nav-tab' if current_tab == 'Visa Services' else ''}">Visa Services</a>
-        <a href="?filter=Driving+License" target="_self" class="nav-link-item-anchor {'active-nav-tab' if current_tab == 'Driving License' else ''}">Driving License</a>
-        <a href="?filter=Business+License" target="_self" class="nav-link-item-anchor {'active-nav-tab' if current_tab == 'Business License' else ''}">Business License</a>
-    </div>
-    
-    <!-- Right Actions Pill Block -->
-    <div class="right-actions-pill-group">
-        <a href="?action=toggle_lang" target="_self" class="pill-lang-switcher-btn">
-            <span>AE</span> <strong>العربية</strong>
-        </a>
-        <div class="pill-status-live-indicator">
-            <span class="status-green-dot-pulse"></span> Agent Live
-        </div>
-        <a href="?action=reset" target="_self" class="pill-reset-session-action-btn">
-            Reset Session
-        </a>
+    <div class="custom-nav-links">
+        <span class="active">{t["nav_home"]}</span>
+        <span>{t["nav_visa"]}</span>
+        <span>{t["nav_driving"]}</span>
+        <span>{t["nav_business"]}</span>
     </div>
 </div>
 """
 st.markdown(nav_html, unsafe_allow_html=True)
 
+# Language Toggle Layer Integration
+cols_lang = st.columns([12, 1])
+with cols_lang[1]:
+    if st.button(t["toggle_btn"], key="lang_toggle"):
+        st.session_state.lang = "Arabic" if st.session_state.lang == "English" else "English"
+        st.session_state.pop("chat_session", None)
+        st.session_state.messages = []
+        st.rerun()
+
 # ─────────────────────────────────────────────
-# PIXEL-PERFECT UNIFIED HERO BANNER (Matches image_48a267.jpg)
+# PARSE ACTION HOOKS FROM URL PARAMS
+# ─────────────────────────────────────────────
+url_params = st.query_params
+if url_params.get("action") == "start_chat":
+    # Reset parameter hooks safely to avoid endless rerun loops
+    st.query_params.clear()
+    if "messages" in st.session_state and len(st.session_state.messages) <= 1:
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": "Dynamic chat initialized! How can I guide you through UAE government services today?",
+            "sources": []
+        })
+    st.rerun()
+
+# ─────────────────────────────────────────────
+# PIXEL-PERFECT UNIFIED HERO BANNER 
 # ─────────────────────────────────────────────
 hero_raw_html = f"""
 <div class="hero-wrapper">
     <div class="hero-left-content">
-        <div class="hero-badge-top">ae Powered by Gemini AI & Grounded Retrieval</div>
         <div class="hero-main-title">UAE Government<br><span>Services Assistant</span></div>
         <div class="hero-description">
             Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.
@@ -688,17 +564,17 @@ st.markdown(hero_raw_html, unsafe_allow_html=True)
 # ─────────────────────────────────────────────
 st.markdown(f"""
 <div class="cards-row">
-    <div class="target-card {'active-card' if current_tab == 'Visa Services' else ''}">
+    <div class="target-card active-card">
         <div class="card-icon">🛂</div>
         <div class="card-title">{t["svc_visa"]}</div>
         <div class="card-subtext">Golden, Student, Resident</div>
     </div>
-    <div class="target-card {'active-card' if current_tab == 'Driving License' else ''}">
+    <div class="target-card">
         <div class="card-icon">🚗</div>
         <div class="card-title">{t["svc_driving"]}</div>
         <div class="card-subtext">Convert, Renew, Eye Tests</div>
     </div>
-    <div class="target-card {'active-card' if current_tab == 'Business License' else ''}">
+    <div class="target-card">
         <div class="card-icon">🏢</div>
         <div class="card-title">{t["svc_business"]}</div>
         <div class="card-subtext">Freezone, Virtual Licenses</div>
@@ -708,7 +584,7 @@ st.markdown(f"""
         <div class="card-title">{t["svc_renewals"]}</div>
         <div class="card-subtext">Emirates ID, Fine Clearance</div>
     </div>
-    <div class="target-card {'active-card' if current_tab == 'All' else ''}">
+    <div class="target-card">
         <div class="card-icon">❓</div>
         <div class="card-title">Full Directory</div>
         <div class="card-subtext">Check the full library</div>
@@ -719,6 +595,9 @@ st.markdown(f"""
 # ─────────────────────────────────────────────
 # SPLIT INTERACTIVE CONTEXT LAYOUT (Chat + Details Panels)
 # ─────────────────────────────────────────────
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+ 
 if api_key_input and "chat_session" not in st.session_state:
     model = get_gemini_model(api_key_input)
     st.session_state.chat_session = start_chat_session(model)
@@ -822,7 +701,7 @@ st.markdown('<div class="library-wrapper">', unsafe_allow_html=True)
 lib_header_left, lib_header_right = st.columns([2, 1])
 
 with lib_header_left:
-    st.markdown(f'<div class="library-title">📚 Verified Services Library ({current_tab})</div>', unsafe_allow_html=True)
+    st.markdown('<div class="library-title">📚 Verified Services Library (All)</div>', unsafe_allow_html=True)
     st.markdown(
         '<p style="font-size:13px; color:#6B7280; margin-top: 4px; margin-bottom:0;">'
         'Verify criteria, checklists, fee lists, and wait times loaded securely from the agent source.'
@@ -830,30 +709,33 @@ with lib_header_left:
         unsafe_allow_html=True
     )
 
+if "selected_library_filter" not in st.session_state:
+    st.session_state.selected_library_filter = "All"
+
 with lib_header_right:
     f_col1, f_col2, f_col3, f_col4 = st.columns(4)
     
     with f_col1:
         if st.button("All", key="btn_lib_all", use_container_width=True, 
-                     type="primary" if current_tab == "All" else "secondary"):
+                     type="primary" if st.session_state.selected_library_filter == "All" else "secondary"):
             st.session_state.selected_library_filter = "All"
             st.rerun()
             
     with f_col2:
         if st.button("Visa Services", key="btn_lib_visa", use_container_width=True,
-                     type="primary" if current_tab == "Visa Services" else "secondary"):
+                     type="primary" if st.session_state.selected_library_filter == "Visa Services" else "secondary"):
             st.session_state.selected_library_filter = "Visa Services"
             st.rerun()
             
     with f_col3:
         if st.button("Driving License", key="btn_lib_drive", use_container_width=True,
-                     type="primary" if current_tab == "Driving License" else "secondary"):
+                     type="primary" if st.session_state.selected_library_filter == "Driving License" else "secondary"):
             st.session_state.selected_library_filter = "Driving License"
             st.rerun()
             
     with f_col4:
         if st.button("Business License", key="btn_lib_biz", use_container_width=True,
-                     type="primary" if current_tab == "Business License" else "secondary"):
+                     type="primary" if st.session_state.selected_library_filter == "Business License" else "secondary"):
             st.session_state.selected_library_filter = "Business License"
             st.rerun()
 
@@ -914,7 +796,7 @@ all_library_items = [
 
 filtered_items = [
     item for item in all_library_items 
-    if current_tab == "All" or item["category"] == current_tab
+    if st.session_state.selected_library_filter == "All" or item["category"] == st.session_state.selected_library_filter
 ]
 
 table_body_html = ""
@@ -1018,3 +900,5 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+
