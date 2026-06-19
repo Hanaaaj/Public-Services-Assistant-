@@ -323,6 +323,30 @@ html, body, [class*="css"], .stApp {
 .metadata-label { color: #64748B; font-weight: 500; font-family: monospace; }
 .metadata-value { font-weight: 600; }
 
+/* Styled Links for the Verification Hub */
+.hub-link-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #E2E8F0;
+    font-size: 13px;
+    text-decoration: none !important;
+    color: #1E293B !important;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+.hub-link-item:last-child {
+    border-bottom: none;
+}
+.hub-link-item:hover {
+    color: #0F5A41 !important; /* Changes to theme emerald green on hover */
+}
+.hub-link-arrow {
+    font-size: 11px;
+    color: #64748B;
+}
+
 /* Custom Library/Data Tables UI */
 .library-wrapper {
     background: white;
@@ -383,6 +407,7 @@ if is_arabic:
     html, body, [class*="css"], .stApp { font-family: 'Cairo', sans-serif !important; direction: rtl; text-align: right; }
     .custom-header, .hero-container, .library-header-row { flex-direction: row-reverse; }
     .custom-table { text-align: right; }
+    .hub-link-item { flex-direction: row-reverse; }
     </style>
     """, unsafe_allow_html=True)
  
@@ -584,15 +609,25 @@ with sidebar_col:
     </div>
     """, unsafe_allow_html=True)
 
-    # Verification Hub Links Card
+    # Verification Hub Links Card WITH LIVE URLs AND BLACK TEXT
     st.markdown(f"""
     <div class="side-panel">
         <div class="panel-title">🗂️ Trusted Verification Hubs</div>
-        <div class="metadata-row"><span>Official UAE Portal</span><span style="font-size:11px;">↗</span></div>
-        <div class="metadata-row"><span>ICP National Portal</span><span style="font-size:11px;">↗</span></div>
-        <div class="metadata-row"><span>GDRFA Dubai Services</span><span style="font-size:11px;">↗</span></div>
-        <div class="metadata-row"><span>RTA Traffic Portal</span><span style="font-size:11px;">↗</span></div>
-        <div class="metadata-row"><span>MOHRE Labour Agency</span><span style="font-size:11px;">↗</span></div>
+        <a href="https://u.ae" target="_blank" class="hub-link-item">
+            <span>Official UAE Portal</span><span class="hub-link-arrow">↗</span>
+        </a>
+        <a href="https://icp.gov.ae" target="_blank" class="hub-link-item">
+            <span>ICP National Portal</span><span class="hub-link-arrow">↗</span>
+        </a>
+        <a href="https://gdrfad.gov.ae" target="_blank" class="hub-link-item">
+            <span>GDRFA Dubai Services</span><span class="hub-link-arrow">↗</span>
+        </a>
+        <a href="https://rta.ae" target="_blank" class="hub-link-item">
+            <span>RTA Traffic Portal</span><span class="hub-link-arrow">↗</span>
+        </a>
+        <a href="https://mohre.gov.ae" target="_blank" class="hub-link-item">
+            <span>MOHRE Labour Agency</span><span class="hub-link-arrow">↗</span>
+        </a>
     </div>
     """, unsafe_allow_html=True)
 
