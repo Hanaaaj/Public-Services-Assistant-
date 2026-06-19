@@ -44,15 +44,7 @@ if "selected_library_filter" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# ─────────────────────────────────────────────
-# CONDITIONAL VIEW ROUTING
-# ─────────────────────────────────────────────
-if not st.session_state.started:
-    # 1. SHOWS YOUR WELCOME SCREEN CARD
-    show_welcome_screen()
-
-else:
- API_KEYS_POOL = []
+API_KEYS_POOL = []
 for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_MEMBER_2", "GEMINI_API_KEY_MEMBER_3"]:
     try:
         if secret_key in st.secrets and st.secrets[secret_key]:
@@ -62,7 +54,16 @@ for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_
 if not API_KEYS_POOL and os.getenv("GEMINI_API_KEY"):
     API_KEYS_POOL.append(os.getenv("GEMINI_API_KEY"))
  
-def get_rotated_api_key(manual_key: str = "") -> str:
+
+# ─────────────────────────────────────────────
+# CONDITIONAL VIEW ROUTING
+# ─────────────────────────────────────────────
+if not st.session_state.started:
+    # 1. SHOWS YOUR WELCOME SCREEN CARD
+    show_welcome_screen()
+
+else:
+ def get_rotated_api_key(manual_key: str = "") -> str:
     if manual_key:
         return manual_key
     if "active_api_key" not in st.session_state:
