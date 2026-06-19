@@ -28,23 +28,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
-
-#######
 # ─────────────────────────────────────────────
-# INITIALIZE SESSION STATE ROUTER
+# FREE-TIER RATE LIMIT RESILIENCE & KEY ROTATION SETUP
 # ─────────────────────────────────────────────
-if "started" not in st.session_state:
-    st.session_state.started = False
-
-# ─────────────────────────────────────────────
-# CONDITIONAL VIEW ROUTING
-# ─────────────────────────────────────────────
-if not st.session_state.started:
-    # 1. SHOWS YOUR WELCOME SCREEN CARD
-    show_welcome_screen()
-
-else:
- API_KEYS_POOL = []
+API_KEYS_POOL = []
 for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_MEMBER_2", "GEMINI_API_KEY_MEMBER_3"]:
     try:
         if secret_key in st.secrets and st.secrets[secret_key]:
@@ -80,8 +67,21 @@ def initialize_agent_backend():
     return kb_data, vectorizer, tfidf_matrix
 
 kb_data, vectorizer, tfidf_matrix = initialize_agent_backend()
- 
+
+# Initialize Session State Router
+if "started" not in st.session_state:
+    st.session_state.started = False
+
 # ─────────────────────────────────────────────
+# CONDITIONAL VIEW ROUTING
+# ─────────────────────────────────────────────
+if not st.session_state.started:
+    # 1. SHOWS YOUR WELCOME SCREEN CARD
+    show_welcome_screen()
+
+else:
+
+ # ─────────────────────────────────────────────
 # ADVANCED CUSTOM CSS FOR TARGET DESIGN
 # ─────────────────────────────────────────────
 st.html("""
