@@ -136,6 +136,6 @@ def show_welcome_screen():
     st.write("")
     col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
-        if st.button("🚀 Get Started", use_container_width=True):
+        if st.button(" Get Started", use_container_width=True):
             st.session_state.started = True
             st.rerun()
