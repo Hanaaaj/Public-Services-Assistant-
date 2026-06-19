@@ -48,7 +48,16 @@ def get_rotated_api_key(manual_key: str = "") -> str:
         st.session_state.active_api_key = random.choice(API_KEYS_POOL) if API_KEYS_POOL else ""
     return st.session_state.active_api_key
  
+
 # ─────────────────────────────────────────────
+# CONDITIONAL VIEW ROUTING
+# ─────────────────────────────────────────────
+if not st.session_state.started:
+    # 1. SHOWS YOUR WELCOME SCREEN CARD
+    show_welcome_screen()
+
+else:
+ # ─────────────────────────────────────────────
 # LANGUAGE STATE
 # ─────────────────────────────────────────────
 if "lang" not in st.session_state:
@@ -71,16 +80,8 @@ kb_data, vectorizer, tfidf_matrix = initialize_agent_backend()
 # Initialize Session State Router
 if "started" not in st.session_state:
     st.session_state.started = False
-
-# ─────────────────────────────────────────────
-# CONDITIONAL VIEW ROUTING
-# ─────────────────────────────────────────────
-if not st.session_state.started:
-    # 1. SHOWS YOUR WELCOME SCREEN CARD
-    show_welcome_screen()
-
-else:
- st.html("""
+ 
+st.html("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&family=Cairo:wght=300;400;600;700;800&display=swap');
  
