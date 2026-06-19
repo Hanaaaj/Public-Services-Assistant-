@@ -53,6 +53,13 @@ for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_
         pass
 if not API_KEYS_POOL and os.getenv("GEMINI_API_KEY"):
     API_KEYS_POOL.append(os.getenv("GEMINI_API_KEY"))
+
+def get_rotated_api_key(manual_key: str = "") -> str:
+    if manual_key:
+        return manual_key
+    if "active_api_key" not in st.session_state:
+        st.session_state.active_api_key = random.choice(API_KEYS_POOL) if API_KEYS_POOL else ""
+    return st.session_state.active_api_key
  
 
 # ─────────────────────────────────────────────
@@ -63,17 +70,7 @@ if not st.session_state.started:
     show_welcome_screen()
 
 else:
- def get_rotated_api_key(manual_key: str = "") -> str:
-    if manual_key:
-        return manual_key
-    if "active_api_key" not in st.session_state:
-        st.session_state.active_api_key = random.choice(API_KEYS_POOL) if API_KEYS_POOL else ""
-    return st.session_state.active_api_key
- 
-# ─────────────────────────────────────────────
-# LANGUAGE STATE
-# ─────────────────────────────────────────────
-if "lang" not in st.session_state:
+ if "lang" not in st.session_state:
     st.session_state.lang = "English"
  
 t = UI[st.session_state.lang]         
