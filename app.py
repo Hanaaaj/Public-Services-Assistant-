@@ -570,8 +570,8 @@ hero_raw_html = f"""
 """
 st.html(hero_raw_html)
         
-        <!-- 2. Cinematic Gradient Guard for Text Legibility -->
-        <div class="hero-overlay"></div>
+<!-- 2. Cinematic Gradient Guard for Text Legibility -->
+<div class="hero-overlay"></div>
         
         <!-- 3. Absolute Positioned Content Overlays -->
         <div class="hero-content-container">
