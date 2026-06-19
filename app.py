@@ -5,7 +5,7 @@ Pure Streamlit UI custom-tailored to a pixel-perfect design system.
 import base64
 import streamlit as st
 import random  
-import os     
+import os      
  
 from agent import (
     UI,
@@ -183,6 +183,18 @@ html, body, [class*="css"], .stApp {
     background-size: 24px 24px;
 }
 .hero-left { max-width: 55%; z-index: 2; }
+.hero-badge {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #A7F3D0;
+}
 .hero-title {
     font-size: 44px;
     font-weight: 800;
@@ -196,27 +208,6 @@ html, body, [class*="css"], .stApp {
     line-height: 1.5;
     color: #D1FAE5;
     opacity: 0.9;
-    margin-bottom: 24px;
-}
-
-/* Custom styling for the integrated button area inside the HTML Hero */
-div.element-container:has(button[key="hero_start_chat"]) {
-    z-index: 3;
-    position: relative;
-}
-.stButton>button[key="hero_start_chat"] {
-    background-color: #FBBF24 !important;
-    color: #0A3C2C !important;
-    border: none !important;
-    font-weight: 700 !important;
-    padding: 12px 28px !important;
-    border-radius: 12px !important;
-    box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4) !important;
-    transition: transform 0.2s ease, background-color 0.2s ease !important;
-}
-.stButton>button[key="hero_start_chat"]:hover {
-    background-color: #F59E0B !important;
-    transform: translateY(-1px);
 }
 
 /* System Health Card inside Hero */
@@ -462,53 +453,29 @@ with cols_lang[1]:
 # ─────────────────────────────────────────────
 # EMERALD HERO BANNER SYSTEM 
 # ─────────────────────────────────────────────
-# Split elements into columns to tightly align native interactive components with raw HTML structure layouts.
-hero_col_left, hero_col_right = st.columns([1.6, 1])
-
-with hero_col_left:
-    # Render text layout without the badge component line
-    hero_text_html = f"""
-    <div class="hero-container" style="box-shadow: none; margin-bottom: 0; padding-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; height: 100%;">
-        <div class="hero-left" style="max-width: 100%;">
-            <div class="hero-title">UAE Government<br><span>Services Assistant</span></div>
-            <div class="hero-subtitle">Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.</div>
+hero_html = f"""
+<div class="hero-container">
+    <div class="hero-left">
+        <div class="hero-badge">AE Powered by Gemini AI & Grounded Retrieval</div>
+        <div class="hero-title">UAE Government<br><span>Services Assistant</span></div>
+        <div class="hero-subtitle">Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.</div>
+    </div>
+    <div class="system-health-card">
+        <div class="health-header">
+            <div class="health-title">SYSTEM HEALTH</div>
+            <div class="health-status">SECURE</div>
+        </div>
+        <div class="health-line fill"></div>
+        <div class="health-line fill-short"></div>
+        <div class="health-line"></div>
+        <div class="health-footer">
+            <span style="color:#94A3B8;">Server-side retrieval:</span>
+            <span style="color:#FBBF24; font-family:monospace; font-weight:700;">TF-IDF Vectorizer</span>
         </div>
     </div>
-    """
-    st.markdown(hero_text_html, unsafe_allow_html=True)
-    
-    # Styled Call-To-Action Dynamic Button
-    if st.button("✨ Start Dynamic Chat", key="hero_start_chat"):
-        if "messages" in st.session_state and len(st.session_state.messages) <= 1:
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": "Dynamic chat initialized! How can I guide you through UAE government services today?",
-                "sources": []
-            })
-            st.rerun()
-
-with hero_col_right:
-    # Render matching frame for system information logs
-    hero_health_html = f"""
-    <div class="hero-container" style="box-shadow: none; margin-bottom: 0; padding-left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; justify-content: flex-end; height: 100%;">
-        <div class="system-health-card" style="width: 100%; margin-top: 25px;">
-            <div class="health-header">
-                <div class="health-title">SYSTEM HEALTH</div>
-                <div class="health-status">SECURE</div>
-            </div>
-            <div class="health-line fill"></div>
-            <div class="health-line fill-short"></div>
-            <div class="health-line"></div>
-            <div class="health-footer">
-                <span style="color:#94A3B8;">Server-side retrieval:</span>
-                <span style="color:#FBBF24; font-family:monospace; font-weight:700;">TF-IDF Vectorizer</span>
-            </div>
-        </div>
-    </div>
-    """
-    st.markdown(hero_health_html, unsafe_allow_html=True)
-
-st.markdown("<div style='margin-bottom: 40px;'></div>", unsafe_allow_html=True)
+</div>
+"""
+st.markdown(hero_html, unsafe_allow_html=True)
  
 # ─────────────────────────────────────────────
 # DYNAMIC CONFIGURABLE CARDS LAYOUT
@@ -850,3 +817,5 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+
