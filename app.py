@@ -80,11 +80,7 @@ if not st.session_state.started:
     show_welcome_screen()
 
 else:
-
- # ─────────────────────────────────────────────
-# ADVANCED CUSTOM CSS FOR TARGET DESIGN
-# ─────────────────────────────────────────────
-st.html("""
+ st.html("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&family=Cairo:wght=300;400;600;700;800&display=swap');
  
@@ -991,3 +987,6 @@ st.html("""
     </div>
 </div>
 """)
+
+
+
