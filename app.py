@@ -45,8 +45,8 @@ if not st.session_state.started:
 
 else:
  API_KEYS_POOL = []
-for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_MEMBER_2", "GEMINI_API_KEY_MEMBER_3"]:
-    try:
+ for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_MEMBER_2", "GEMINI_API_KEY_MEMBER_3"]:
+  try:
         if secret_key in st.secrets and st.secrets[secret_key]:
             API_KEYS_POOL.append(st.secrets[secret_key])
     except Exception:
