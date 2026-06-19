@@ -544,7 +544,7 @@ else:
     <div class="hero-wrapper">
         <!-- 1. Automated Background Animation Track -->
         <div class="hero-slideshow">
-            <div class="hero-slide" style="background-image: url('https://unsplash.com/photos/green-white-and-red-flag-AMGDsimElEQ');"></div>
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1579930700019-f5f6ba3db867?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');"></div>
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200');"></div>
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?q=80&w=1200');"></div>
         </div>
