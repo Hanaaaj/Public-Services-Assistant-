@@ -193,7 +193,7 @@ else:
     
     .hero-wrapper {
         border-radius: 24px;
-        height: 420px;
+        height: 540px;
         position: relative;
         box-shadow: 0 10px 30px rgba(10, 60, 44, 0.15);
         margin-bottom: 40px;
@@ -250,7 +250,7 @@ else:
         align-items: flex-start;
     }
     .hero-main-title {
-        font-size: 42px;
+        font-size: 52px;
         font-weight: 800;
         line-height: 1.15;
         margin-bottom: 20px;
