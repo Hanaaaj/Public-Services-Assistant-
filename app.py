@@ -581,7 +581,7 @@ st.html(hero_raw_html)
                     Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.
                 </div>
                 <div class="hero-btn-group">
-                    <a href="?action=start_chat" target="_self" class="btn-dynamic-chat">Start Dynamic Chat &nbsp;➔</a>
+                    <a href="?action=start_chat" target="_self" class="btn-dynamic-chat">Start Dynamic Chat &nbsp;&rarr;</a>
                     <a href="#verified-library" class="btn-browse-library">Browse Verification Library</a>
                 </div>
             </div>
