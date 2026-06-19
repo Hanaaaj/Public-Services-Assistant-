@@ -112,8 +112,8 @@ else:
     .block-container {
         padding-top: 0rem !important;
         padding-bottom: 0rem !important;
-        padding-left: 3rem !important;
-        padding-right: 3rem !important;
+        padding-left: 0rem !important;
+        padding-right: 0rem !important;
         max-width: 100% !important;
     }
 
@@ -192,7 +192,7 @@ else:
     /* UNIFIED HERO CONTAINER SYSTEM */
     
     .hero-wrapper {
-        border-radius: 24px;
+        border-radius: 0px;
         height: 540px;
         position: relative;
         box-shadow: 0 10px 30px rgba(10, 60, 44, 0.15);
@@ -238,9 +238,9 @@ else:
         inset: 0;
         z-index: 3;
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         align-items: center;
-        padding: 48px;
+        padding: 0 56px 56px 56px;
     }
     
     .hero-left-content { 
