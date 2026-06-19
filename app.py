@@ -80,7 +80,15 @@ html, body, [class*="css"], .stApp {
     font-family: 'Inter', sans-serif; 
     background-color: #FDFDFB !important;
 }
+/* Force all text inside chat messages to inherit black/dark charcoal color */
+[data-testid="stChatMessage"] {
+    color: #111827 !important;
+}
 
+/* Ensure paragraph tags inside chat elements also stay black */
+[data-testid="stChatMessage"] p {
+    color: #111827 !important;
+}
 /* Fix main padding */
 .block-container {
     padding-top: 0rem !important;
