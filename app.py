@@ -530,7 +530,13 @@ with st.sidebar:
 lang_toggle_text = "English" if is_arabic else "العربية"
 current_filter = st.session_state.selected_library_filter
 
-st.markdown(f"""
+# Pre-calculate active CSS indicators cleanly to protect string parser states
+active_all = "active" if current_filter == "All" else ""
+active_visa = "active" if current_filter == "Visa Services" else ""
+active_driving = "active" if current_filter == "Driving License" else ""
+active_business = "active" if current_filter == "Business License" else ""
+
+navbar_html = f"""
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; margin-bottom: 20px; width: 100%;">
     
     <div class="brand-block" style="flex: 1; display: flex; justify-content: flex-start;">
@@ -544,16 +550,16 @@ st.markdown(f"""
     <div style="flex: 2; display: flex; justify-content: center; align-items: center;">
         <div class="custom-nav-links" style="gap: 32px; font-size: 14.5px; display: flex; align-items: center;">
             <a href="?filter=All#verified-library" target="_self">
-                <span class="{'active' if current_filter == 'All' else ''}">{t["nav_home"]}</span>
+                <span class="{active_all}">{t["nav_home"]}</span>
             </a>
             <a href="?filter=Visa+Services#verified-library" target="_self">
-                <span class="{'active' if current_filter == 'Visa Services' else ''}">{t["nav_visa"]}</span>
+                <span class="{active_visa}">{t["nav_visa"]}</span>
             </a>
             <a href="?filter=Driving+License#verified-library" target="_self">
-                <span class="{'active' if current_filter == 'Driving License' else ''}">{t["nav_driving"]}</span>
+                <span class="{active_driving}">{t["nav_driving"]}</span>
             </a>
             <a href="?filter=Business+License#verified-library" target="_self">
-                <span class="{'active' if current_filter == 'Business License' else ''}">{t["nav_business"]}</span>
+                <span class="{active_business}">{t["nav_business"]}</span>
             </a>
         </div>
     </div>
@@ -577,7 +583,8 @@ st.markdown(f"""
     
 </div>
 <div style="margin-bottom: 25px;"></div>
-""", unsafe_allow_html=True)
+"""
+st.markdown(navbar_html, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 # PARSE ACTION & LANGUAGE HOOKS FROM URL PARAMS
