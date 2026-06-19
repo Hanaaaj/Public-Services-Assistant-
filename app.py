@@ -1,11 +1,11 @@
 """
 app.py — UAE Government Services Assistant
-Pure Streamlit UI custom-tailored to a pixel-perfect design system.
+Pure Streamlit UI custom-tailored to a pixel-perfect design system matching image_48a267.jpg.
 """
 import base64
 import streamlit as st
 import random  
-import os      
+import os     
  
 from agent import (
     UI,
@@ -24,7 +24,7 @@ st.set_page_config(
     page_title="UAE Gov Services AI Assistant",
     page_icon="🇦🇪",
     layout="wide",
-    initial_sidebar_state="collapsed" # Collapsed to let the custom top nav shine
+    initial_sidebar_state="collapsed"
 )
  
 # ─────────────────────────────────────────────
@@ -160,11 +160,13 @@ html, body, [class*="css"], .stApp {
     padding-bottom: 4px;
 }
 
-/* The Emerald Hero Section */
-.hero-container {
-    background: radial-gradient(circle at 80% 20%, #166E53 0%, #0A3C2C 100%);
+/* ─────────────────────────────────────────────
+   UNIFIED HERO CONTAINER SYSTEM (Matches image_48a267.jpg)
+   ───────────────────────────────────────────── */
+.hero-wrapper {
+    background: radial-gradient(circle at 80% 20%, #115E46 0%, #063728 100%);
     border-radius: 24px;
-    padding: 50px 50px 60px 50px;
+    padding: 48px;
     color: white;
     position: relative;
     box-shadow: 0 10px 30px rgba(10, 60, 44, 0.15);
@@ -174,86 +176,139 @@ html, body, [class*="css"], .stApp {
     align-items: center;
     overflow: hidden;
 }
-.hero-container::before {
+/* Blueprint Grid Overlay Line Accentuation */
+.hero-wrapper::before {
     content: "";
     position: absolute;
     inset: 0;
-    opacity: 0.04;
-    background-image: linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px);
-    background-size: 24px 24px;
+    opacity: 0.08;
+    background-image: linear-gradient(to right, rgba(255,255,255,0.4) 1px, transparent 1px), 
+                      linear-gradient(to bottom, rgba(255,255,255,0.4) 1px, transparent 1px);
+    background-size: 32px 32px;
+    z-index: 1;
 }
-.hero-left { max-width: 55%; z-index: 2; }
-.hero-badge {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-size: 12px;
+.hero-left-content { 
+    max-width: 58%; 
+    z-index: 2; 
+    display: flex; 
+    flex-direction: column;
+    align-items: flex-start;
+}
+.hero-badge-top {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #34D399;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.5px;
-    display: inline-block;
-    margin-bottom: 20px;
-    color: #A7F3D0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    letter-spacing: 0.2px;
 }
-.hero-title {
-    font-size: 44px;
+.hero-main-title {
+    font-size: 42px;
     font-weight: 800;
-    line-height: 1.1;
-    margin-bottom: 16px;
+    line-height: 1.15;
+    margin-bottom: 20px;
     color: #FFFFFF;
 }
-.hero-title span { color: #FBBF24; }
-.hero-subtitle {
+.hero-main-title span { color: #FBBF24; }
+.hero-description {
     font-size: 15px;
-    line-height: 1.5;
-    color: #D1FAE5;
-    opacity: 0.9;
+    line-height: 1.6;
+    color: #A7F3D0;
+    margin-bottom: 32px;
 }
 
-/* System Health Card inside Hero */
-.system-health-card {
+/* Button Layout Array Group */
+.hero-btn-group {
+    display: flex;
+    gap: 16px;
+}
+.btn-dynamic-chat {
+    background-color: #10B981;
+    color: #042F22 !important;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    border: none;
+    transition: transform 0.2s, background-color 0.2s;
+}
+.btn-dynamic-chat:hover {
+    background-color: #059669;
+    transform: translateY(-1px);
+}
+.btn-browse-library {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #FFFFFF !important;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+.btn-browse-library:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Right Floating Card Dashboard */
+.hero-right-dashboard {
+    z-index: 2;
+    width: 380px;
+}
+.system-health-card-unified {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 16px;
     padding: 24px;
-    width: 380px;
-    z-index: 2;
 }
-.health-header {
+.health-header-unified {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
-.health-title {
+.health-title-text {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 1px;
     color: #94A3B8;
 }
-.health-status {
-    background: rgba(16, 185, 129, 0.2);
+.health-badge-secure {
+    background: rgba(16, 185, 129, 0.15);
     color: #34D399;
     font-size: 11px;
     font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 6px;
+    padding: 4px 10px;
+    border-radius: 8px;
     letter-spacing: 0.5px;
 }
-.health-line {
-    height: 4px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
-    margin-bottom: 10px;
+.health-skeleton-line {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    margin-bottom: 12px;
 }
-.health-line.fill { width: 70%; background: rgba(255,255,255,0.3); }
-.health-line.fill-short { width: 45%; background: rgba(255,255,255,0.3); }
-.health-footer {
+.health-skeleton-line.l1 { width: 60%; }
+.health-skeleton-line.l2 { width: 85%; }
+.health-skeleton-line.l3 { width: 68%; }
+.health-footer-unified {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 28px;
     font-size: 12px;
 }
 
@@ -394,10 +449,11 @@ if is_arabic:
     st.markdown("""
     <style>
     html, body, [class*="css"], .stApp { font-family: 'Cairo', sans-serif !important; direction: rtl; text-align: right; }
-    .custom-header, .hero-container, .library-header-row { flex-direction: row-reverse; }
+    .custom-header, .hero-wrapper, .library-header-row { flex-direction: row-reverse; }
     .custom-table { text-align: right; }
     .hub-link-item { flex-direction: row-reverse; }
     .side-disclaimer { flex-direction: row-reverse; }
+    .hero-btn-group { flex-direction: row-reverse; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -451,30 +507,58 @@ with cols_lang[1]:
         st.rerun()
 
 # ─────────────────────────────────────────────
-# EMERALD HERO BANNER SYSTEM 
+# PARSE ACTION HOOKS FROM URL PARAMS
 # ─────────────────────────────────────────────
-hero_html = f"""
-<div class="hero-container">
-    <div class="hero-left">
-        <div class="hero-title">UAE Government<br><span>Services Assistant</span></div>
-        <div class="hero-subtitle">Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.</div>
-    </div>
-    <div class="system-health-card">
-        <div class="health-header">
-            <div class="health-title">SYSTEM HEALTH</div>
-            <div class="health-status">SECURE</div>
+url_params = st.query_params
+if url_params.get("action") == "start_chat":
+    # Reset parameter hooks safely to avoid endless rerun loops
+    st.query_params.clear()
+    if "messages" in st.session_state and len(st.session_state.messages) <= 1:
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": "Dynamic chat initialized! How can I guide you through UAE government services today?",
+            "sources": []
+        })
+    st.rerun()
+
+# ─────────────────────────────────────────────
+# PIXEL-PERFECT UNIFIED HERO BANNER (Matches image_48a267.jpg)
+# ─────────────────────────────────────────────
+hero_raw_html = f"""
+<div class="hero-wrapper">
+    <div class="hero-left-content">
+        <div class="hero-badge-top">ae Powered by Gemini AI & Grounded Retrieval</div>
+        <div class="hero-main-title">UAE Government<br><span>Services Assistant</span></div>
+        <div class="hero-description">
+            Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.
         </div>
-        <div class="health-line fill"></div>
-        <div class="health-line fill-short"></div>
-        <div class="health-line"></div>
-        <div class="health-footer">
-            <span style="color:#94A3B8;">Server-side retrieval:</span>
-            <span style="color:#FBBF24; font-family:monospace; font-weight:700;">TF-IDF Vectorizer</span>
+        <div class="hero-btn-group">
+            <a href="?action=start_chat" target="_self" class="btn-dynamic-chat">
+                Start Dynamic Chat &nbsp;➔
+            </a>
+            <a href="#verified-library" class="btn-browse-library">
+                Browse Verification Library
+            </a>
+        </div>
+    </div>
+    <div class="hero-right-dashboard">
+        <div class="system-health-card-unified">
+            <div class="health-header-unified">
+                <div class="health-title-text">SYSTEM HEALTH</div>
+                <div class="health-badge-secure">SECURE</div>
+            </div>
+            <div class="health-skeleton-line l1"></div>
+            <div class="health-skeleton-line l2"></div>
+            <div class="health-skeleton-line l3"></div>
+            <div class="health-footer-unified">
+                <span style="color:#64748B;">Server-side retrieval:</span>
+                <span style="color:#FBBF24; font-family:monospace; font-weight:700;">TF-IDF Vectorizer</span>
+            </div>
         </div>
     </div>
 </div>
 """
-st.markdown(hero_html, unsafe_allow_html=True)
+st.markdown(hero_raw_html, unsafe_allow_html=True)
  
 # ─────────────────────────────────────────────
 # DYNAMIC CONFIGURABLE CARDS LAYOUT
@@ -570,7 +654,7 @@ with chat_col:
             st.rerun()
 
 with sidebar_col:
-    # Prototype Disclaimer Card (Replaces Agent Context details)
+    # Prototype Disclaimer Card
     st.markdown(f"""
     <div class="side-disclaimer">
         <div class="side-disclaimer-icon">🛈</div>
@@ -580,7 +664,7 @@ with sidebar_col:
     </div>
     """, unsafe_allow_html=True)
 
-    # Verification Hub Links Card WITH LIVE URLs AND BLACK TEXT
+    # Verification Hub Links Card
     st.markdown(f"""
     <div class="side-panel">
         <div class="panel-title">🗂️ Trusted Verification Hubs</div>
@@ -605,6 +689,7 @@ with sidebar_col:
 # ─────────────────────────────────────────────
 # GROUNDED VERIFIED VERIFICATION LIBRARY MATRIX
 # ─────────────────────────────────────────────
+st.markdown('<div id="verified-library"></div>', unsafe_allow_html=True)
 st.markdown("""
 <style>
 .custom-table tbody tr:hover { background-color: #F8FAFC; }
@@ -816,5 +901,3 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-
