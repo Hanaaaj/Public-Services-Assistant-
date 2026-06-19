@@ -161,7 +161,7 @@ html, body, [class*="css"], .stApp {
 }
 
 /* ─────────────────────────────────────────────
-   UNIFIED HERO CONTAINER SYSTEM
+    UNIFIED HERO CONTAINER SYSTEM
    ───────────────────────────────────────────── */
 .hero-wrapper {
     background: radial-gradient(circle at 80% 20%, #115E46 0%, #063728 100%);
@@ -823,46 +823,49 @@ filtered_items = [
     if st.session_state.selected_library_filter == "All" or item["category"] == st.session_state.selected_library_filter
 ]
 
-# Generate rows dynamically
-table_rows_html = ""
+# 1. Loop and generate the raw row items cleanly
+table_rows = []
 for item in filtered_items:
-    table_rows_html += f"""
-    <tr>
-        <td style="width: 22%;">
-            <strong style="color: #111827; font-size: 14.5px; display: block; margin-bottom: 8px;">{item['title']}</strong>
-            <span class="table-badge" style="background:{item['badge_bg']}; color:{item['badge_color']};">{item['badge']}</span>
-        </td>
-        <td style="width: 23%; color:#374151;">{item['eligibility']}</td>
-        <td style="width: 23%; color:#374151;">{item['checklist']}</td>
-        <td style="width: 14%; color:#4B5563; font-weight: 500;">{item['timeline']}</td>
-        <td style="width: 18%; color:#111827; font-weight: 600; text-align:right;">{item['fees']}</td>
-    </tr>
-    """
+    row_html = (
+        f"<tr>"
+        f"<td style='width: 22%;'><strong style='color: #111827; font-size: 14.5px; display: block; margin-bottom: 8px;'>{item['title']}</strong>"
+        f"<span class='table-badge' style='background:{item['badge_bg']}; color:{item['badge_color']};'>{item['badge']}</span></td>"
+        f"<td style='width: 23%; color:#374151;'>{item['eligibility']}</td>"
+        f"<td style='width: 23%; color:#374151;'>{item['checklist']}</td>"
+        f"<td style='width: 14%; color:#4B5563; font-weight: 500;'>{item['timeline']}</td>"
+        f"<td style='width: 18%; color:#111827; font-weight: 600; text-align:right;'>{item['fees']}</td>"
+        f"</tr>"
+    )
+    table_rows.append(row_html)
 
-if not table_rows_html:
+# Fallback if no rows exist
+if not table_rows:
     table_rows_html = "<tr><td colspan='5' style='text-align:center; padding:40px; color:#9CA3AF;'>No records available for this filter group.</td></tr>"
+else:
+    table_rows_html = "".join(table_rows)
 
-# Combine layout frame logic safely inside a singular markdown evaluation container
-full_matrix_html = f"""
-    <div class="custom-table-container">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th style="width: 22%;">Service Title / Tag</th>
-                    <th style="width: 23%;">Typical Eligibility Criteria</th>
-                    <th style="width: 23%;">Required Checklists</th>
-                    <th style="width: 14%;">Processing Timeline</th>
-                    <th style="width: 18%; text-align:right;">Standard Fees</th>
-                </tr>
-            </thead>
-            <tbody>
-                {table_rows_html}
-            </tbody>
-        </table>
-    </div>
-</div>
-"""
+# 2. Build the final HTML container safely
+full_matrix_html = (
+    "<div class='custom-table-container'>"
+    "<table class='custom-table'>"
+    "<thead>"
+    "<tr>"
+    "<th style='width: 22%;'>Service Title / Tag</th>"
+    "<th style='width: 23%;'>Typical Eligibility Criteria</th>"
+    "<th style='width: 23%;'>Required Checklists</th>"
+    "<th style='width: 14%;'>Processing Timeline</th>"
+    "<th style='width: 18%; text-align:right;'>Standard Fees</th>"
+    "</tr>"
+    "</thead>"
+    "<tbody>"
+    f"{table_rows_html}"
+    "</tbody>"
+    "</table>"
+    "</div>"
+    "</div>"
+)
 
+# 3. Render directly using unsafe_allow_html
 st.markdown(full_matrix_html, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
