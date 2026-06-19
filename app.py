@@ -525,7 +525,7 @@ with st.sidebar:
         st.rerun()
  
 # ─────────────────────────────────────────────
-# UNIFIED NAV BAR WITH NATIVE STREAMLIT HTML ENGINE
+# UNIFIED NAV BAR WITH TOP PADDING SHIFT
 # ─────────────────────────────────────────────
 lang_toggle_text = "English" if is_arabic else "العربية"
 current_filter = st.session_state.selected_library_filter
@@ -535,9 +535,11 @@ active_visa = "active" if current_filter == "Visa Services" else ""
 active_driving = "active" if current_filter == "Driving License" else ""
 active_business = "active" if current_filter == "Business License" else ""
 
+# Added padding-top: 25px to shift the bar downwards
 navbar_html = f"""
-<div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; margin-bottom: 20px; width: 100%;">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 25px 0 15px 0; margin-bottom: 20px; width: 100%;">
     
+    <!-- LEFT SIDE: Brand Identity -->
     <div class="brand-block" style="flex: 1; display: flex; justify-content: flex-start;">
         <div class="brand-badge">AE</div>
         <div>
@@ -546,6 +548,7 @@ navbar_html = f"""
         </div>
     </div>
     
+    <!-- CENTER: Centralized Navigation Links -->
     <div style="flex: 2; display: flex; justify-content: center; align-items: center;">
         <div class="custom-nav-links" style="gap: 32px; font-size: 14.5px; display: flex; align-items: center;">
             <a href="?filter=All#verified-library" target="_self">
@@ -563,6 +566,7 @@ navbar_html = f"""
         </div>
     </div>
     
+    <!-- RIGHT SIDE: Fixed Position Language Switcher -->
     <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center;">
         <a href="?click=lang_toggle" target="_self" style="
             text-decoration: none; 
