@@ -80,7 +80,7 @@ def show_welcome_screen():
             encoded_image = base64.b64encode(data).decode()
         image_src = f"data:image/jpeg;base64,{encoded_image}"
     except FileNotFoundError:
-        image_src = "https://via.placeholder.com/200/0A5C44/FFFFFF?text=Daleel"
+        image_src = "LOGO.jpeg"
 
     container_placeholder = st.empty()
     title = "Welcome to Daleel — دليل "
