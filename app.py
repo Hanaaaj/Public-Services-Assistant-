@@ -16,7 +16,9 @@ from agent import (
     start_chat_session,
     generate_grounded_response,
 )
- 
+
+from welcome import show_welcome_screen
+
 # ─────────────────────────────────────────────
 # PAGE CONFIG
 # ─────────────────────────────────────────────
@@ -26,11 +28,23 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
- 
+
+#######
 # ─────────────────────────────────────────────
-# FREE-TIER RATE LIMIT RESILIENCE & KEY ROTATION SETUP
+# INITIALIZE SESSION STATE ROUTER
 # ─────────────────────────────────────────────
-API_KEYS_POOL = []
+if "started" not in st.session_state:
+    st.session_state.started = False
+
+# ─────────────────────────────────────────────
+# CONDITIONAL VIEW ROUTING
+# ─────────────────────────────────────────────
+if not st.session_state.started:
+    # 1. SHOWS YOUR WELCOME SCREEN CARD
+    show_welcome_screen()
+
+else:
+ API_KEYS_POOL = []
 for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_MEMBER_2", "GEMINI_API_KEY_MEMBER_3"]:
     try:
         if secret_key in st.secrets and st.secrets[secret_key]:
@@ -977,3 +991,13 @@ st.html("""
     </div>
 </div>
 """)
+
+#######
+
+
+
+
+
+ 
+# ─────────────────────────────────────────────
+c
