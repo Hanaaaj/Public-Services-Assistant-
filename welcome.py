@@ -75,7 +75,7 @@ def show_welcome_screen():
     """, unsafe_allow_html=True)
 
     try:
-        with open("logo.jpeg", "rb") as f:
+        with open("LOGO.jpeg", "rb") as f:
             data = f.read()
             encoded_image = base64.b64encode(data).decode()
         image_src = f"data:image/jpeg;base64,{encoded_image}"
