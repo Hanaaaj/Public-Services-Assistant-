@@ -6,7 +6,7 @@ import base64
 import streamlit as st
 import random  # Added for key rotation
 import os      # Added for key extraction
-
+ 
 from agent import (
     UI,
     load_knowledge_base,
@@ -16,7 +16,7 @@ from agent import (
     start_chat_session,
     generate_grounded_response,
 )
-
+ 
 # ─────────────────────────────────────────────
 # PAGE CONFIG
 # ─────────────────────────────────────────────
@@ -25,7 +25,7 @@ st.set_page_config(
     page_icon="🇦🇪",
     layout="wide",
 )
-
+ 
 # ─────────────────────────────────────────────
 # FREE-TIER RATE LIMIT RESILIENCE & KEY ROTATION SETUP
 # ─────────────────────────────────────────────
@@ -39,24 +39,34 @@ for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_
         pass
 if not API_KEYS_POOL and os.getenv("GEMINI_API_KEY"):
     API_KEYS_POOL.append(os.getenv("GEMINI_API_KEY"))
-
+ 
+ 
 def get_rotated_api_key(manual_key: str = "") -> str:
-    """Returns a random key from the active keys pool, falling back to manual input."""
+    """
+    Picks ONE key and STICKS to it for the lifetime of the session, instead
+    of re-randomizing on every Streamlit rerun (which was the bug: each
+    rerun could silently swap in a different - sometimes bad or
+    zero-quota - key under the already-cached chat_session, producing
+    inconsistent, hedging "I don't have that information" replies that had
+    nothing to do with retrieval).
+    """
     if manual_key:
         return manual_key
-    if API_KEYS_POOL:
-        return random.choice(API_KEYS_POOL)
-    return ""
-
+ 
+    if "active_api_key" not in st.session_state:
+        st.session_state.active_api_key = random.choice(API_KEYS_POOL) if API_KEYS_POOL else ""
+ 
+    return st.session_state.active_api_key
+ 
 # ─────────────────────────────────────────────
 # LANGUAGE STATE  (must be before any UI render)
 # ─────────────────────────────────────────────
 if "lang" not in st.session_state:
     st.session_state.lang = "English"
-
+ 
 t = UI[st.session_state.lang]          # shorthand — use t["key"] everywhere
 is_arabic = st.session_state.lang == "Arabic"
-
+ 
 # ─────────────────────────────────────────────
 # CSS  (base + conditional RTL/Arabic font)
 # ─────────────────────────────────────────────
@@ -64,11 +74,11 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
-
+ 
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-
+ 
 .main { background-color: #F7F9FA; }
-
+ 
 .nav-bar {
     display: flex;
     justify-content: space-between;
@@ -81,7 +91,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 .nav-logo  { font-size: 22px; font-weight: 700; color: #006C4C; }
 .nav-links { display: flex; gap: 28px; font-weight: 500; color: #1E293B; font-size: 14px; }
-
+ 
 .service-card {
     background: white;
     border-radius: 18px;
@@ -96,7 +106,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .service-card.active { background: #FFF7E6; border-color: #D4AF37; }
 .service-card .icon  { font-size: 30px; margin-bottom: 8px; }
 .service-card .label { font-weight: 700; font-size: 14px; color: #1E293B; }
-
+ 
 .disclaimer {
     background: #fff3cd;
     padding: 12px 18px;
@@ -106,7 +116,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     font-size: 0.86rem;
     color: #856404;
 }
-
+ 
 .source-badge {
     display: inline-block;
     background: #e8f5e9;
@@ -120,7 +130,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 </style>
 """, unsafe_allow_html=True)
-
+ 
 # RTL + Cairo font when Arabic is active
 if is_arabic:
     st.markdown("""
@@ -135,38 +145,38 @@ if is_arabic:
     .disclaimer { border-left: none; border-right: 6px solid #ffc107; }
     </style>
     """, unsafe_allow_html=True)
-
+ 
 # ─────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────
 def img_to_b64(path: str) -> str:
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
-
+ 
 # ─────────────────────────────────────────────
 # AGENT RESOURCES  (cached)
 # ─────────────────────────────────────────────
 @st.cache_data
 def _load_kb():
     return load_knowledge_base()
-
+ 
 @st.cache_resource
 def _build_index(_data):
     return build_retrieval_index(_data)
-
+ 
 @st.cache_resource
 def _get_model(api_key: str):
     return get_gemini_model(api_key)
-
+ 
 kb_data = _load_kb()
 vectorizer, tfidf_matrix = _build_index(kb_data)
-
+ 
 # ─────────────────────────────────────────────
 # SIDEBAR
 # ─────────────────────────────────────────────
 with st.sidebar:
     st.header(t["config_header"])
-
+ 
     # Incorporate the active rate limit rotation pool check dynamically
     if len(API_KEYS_POOL) > 0:
         api_key_input = get_rotated_api_key()
@@ -179,7 +189,7 @@ with st.sidebar:
         )
         if not api_key_input:
             st.info(t["api_info"])
-
+ 
     st.markdown("---")
     st.markdown(t["verify_hubs"])
     st.markdown("- [Official UAE Portal](https://u.ae)")
@@ -187,13 +197,14 @@ with st.sidebar:
     st.markdown("- [GDRFA Portal](https://gdrfad.gov.ae)")
     st.markdown("- [RTA Portal](https://rta.ae)")
     st.markdown("- [MOHRE Portal](https://mohre.gov.ae)")
-
+ 
     st.markdown("---")
     if st.button(t["clear_chat"]):
         st.session_state.messages = []
         st.session_state.pop("chat_session", None)
+        st.session_state.pop("active_api_key", None)
         st.rerun()
-
+ 
 # ─────────────────────────────────────────────
 # DISCLAIMER
 # ─────────────────────────────────────────────
@@ -201,12 +212,12 @@ st.markdown(
     f'<div class="disclaimer">{t["disclaimer"]}</div>',
     unsafe_allow_html=True,
 )
-
+ 
 # ─────────────────────────────────────────────
 # NAV BAR  +  LANGUAGE TOGGLE (top right)
 # ─────────────────────────────────────────────
 nav_col, toggle_col = st.columns([11, 1])
-
+ 
 with toggle_col:
     st.markdown("<div style='padding-top:8px'>", unsafe_allow_html=True)
     if st.button(t["toggle_btn"], key="lang_toggle"):
@@ -215,7 +226,7 @@ with toggle_col:
         st.session_state.messages = []
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
-
+ 
 with nav_col:
     st.markdown(f"""
     <div class="nav-bar">
@@ -229,7 +240,7 @@ with nav_col:
         </div>
     </div>
     """, unsafe_allow_html=True)
-
+ 
 # ─────────────────────────────────────────────
 # HERO BANNER
 # ─────────────────────────────────────────────
@@ -259,7 +270,7 @@ except FileNotFoundError:
         <div style="font-size:17px; opacity:0.9;">{t["hero_subtitle"].replace('<br>', ' ')}</div>
     </div>
     """, unsafe_allow_html=True)
-
+ 
 # ─────────────────────────────────────────────
 # QUICK SERVICE CARDS
 # ─────────────────────────────────────────────
@@ -267,7 +278,7 @@ st.markdown(
     f"<div style='font-size:22px; font-weight:700; color:#1E293B; margin-bottom:14px;'>{t['quick_services']}</div>",
     unsafe_allow_html=True,
 )
-
+ 
 services = [
     ("🛂", t["svc_visa"],     True),
     ("🚗", t["svc_driving"],  False),
@@ -275,7 +286,7 @@ services = [
     ("🔄", t["svc_renewals"], False),
     ("❓", t["svc_faq"],      False),
 ]
-
+ 
 cols = st.columns(len(services))
 for col, (icon, label, active) in zip(cols, services):
     with col:
@@ -286,9 +297,9 @@ for col, (icon, label, active) in zip(cols, services):
             <div class="label">{label}</div>
         </div>
         """, unsafe_allow_html=True)
-
+ 
 st.markdown("<br>", unsafe_allow_html=True)
-
+ 
 # ─────────────────────────────────────────────
 # SERVICE BANNER (optional second image)
 # ─────────────────────────────────────────────
@@ -306,17 +317,17 @@ try:
 except FileNotFoundError:
     st.markdown("---")
     st.markdown(f"### 💬 {t['chat_section']}")
-
+ 
 # ─────────────────────────────────────────────
 # SESSION STATE
 # ─────────────────────────────────────────────
 if "messages" not in st.session_state:
     st.session_state.messages = []
-
+ 
 if api_key_input and "chat_session" not in st.session_state:
     model = _get_model(api_key_input)
     st.session_state.chat_session = start_chat_session(model)
-
+ 
 # Static greeting (saves 1 API call per session)
 if not st.session_state.messages:
     st.session_state.messages.append({
@@ -324,14 +335,14 @@ if not st.session_state.messages:
         "content": t["greeting"],
         "sources": [],
     })
-
+ 
 # ─────────────────────────────────────────────
 # QUICK QUERY BUTTONS
 # ─────────────────────────────────────────────
 st.markdown(f"### {t['quick_queries']}")
 q_col1, q_col2, q_col3 = st.columns(3)
 quick_query = None
-
+ 
 with q_col1:
     if st.button(t["btn_student"]):
         quick_query = t["q_student"]
@@ -341,7 +352,7 @@ with q_col2:
 with q_col3:
     if st.button(t["btn_golden"]):
         quick_query = t["q_golden"]
-
+ 
 if quick_query and api_key_input:
     matched_docs, context_string = retrieve_context(quick_query, vectorizer, tfidf_matrix, kb_data)
     reply = generate_grounded_response(
@@ -351,7 +362,7 @@ if quick_query and api_key_input:
     st.session_state.messages.append({"role": "user",      "content": quick_query, "sources": []})
     st.session_state.messages.append({"role": "assistant", "content": reply, "sources": matched_docs})
     st.rerun()
-
+ 
 # ─────────────────────────────────────────────
 # CHAT HISTORY
 # ─────────────────────────────────────────────
@@ -366,7 +377,7 @@ for msg in st.session_state.messages:
                     f'📎 {src["title"]}</a>',
                     unsafe_allow_html=True,
                 )
-
+ 
 # ─────────────────────────────────────────────
 # CHAT INPUT
 # ─────────────────────────────────────────────
@@ -375,10 +386,10 @@ if user_input := st.chat_input(t["placeholder"]):
         st.warning(t["api_info"])
     else:
         st.session_state.messages.append({"role": "user", "content": user_input, "sources": []})
-
+ 
         with st.chat_message("user"):
             st.write(user_input)
-
+ 
         with st.chat_message("assistant"):
             matched_docs, context_string = retrieve_context(
                 user_input, vectorizer, tfidf_matrix, kb_data
@@ -397,13 +408,13 @@ if user_input := st.chat_input(t["placeholder"]):
                             f'📎 {src["title"]}</a>',
                             unsafe_allow_html=True,
                         )
-
+ 
         st.session_state.messages.append({
             "role": "assistant",
             "content": reply,
             "sources": matched_docs,
         })
-
+ 
 # ─────────────────────────────────────────────
 # FOOTER
 # ─────────────────────────────────────────────
