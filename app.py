@@ -23,7 +23,7 @@ from welcome import show_welcome_screen
 # PAGE CONFIG
 # ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="UAE Gov Services AI Assistant",
+    page_title=" Public Service AI Assistant",
     page_icon="🇦🇪",
     layout="wide",
     initial_sidebar_state="collapsed"
