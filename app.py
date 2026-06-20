@@ -18,6 +18,12 @@ from agent import (
 )
 
 from welcome import show_welcome_screen
+url_params = st.query_params
+if url_params.get("action") == "start_chat":
+    st.session_state.started = True
+if "started" not in st.session_state or not st.session_state.started:
+    show_welcome_screen()
+    st.stop()
 
 # ─────────────────────────────────────────────
 # PAGE CONFIG
@@ -422,9 +428,7 @@ else:
                 <div class="hero-main-title">{hero_title}</div>
                 <div class="hero-description">{hero_desc}</div>
                 <div class="hero-btn-group">
-                    <a href="javascript:void(0);" onclick="document.getElementById('chat-section-target').scrollIntoView({ behavior: 'smooth', block: 'start' });" class="btn-dynamic-chat">
-                    {hero_btn1}
-                    </a>
+                    <a href="?action=start_chat" target="_self" class="btn-dynamic-chat">{hero_btn1}</a>
                     <a href="#verified-library" class="btn-browse-library">{hero_btn2}</a>
                 </div>
             </div>
