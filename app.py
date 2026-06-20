@@ -452,23 +452,7 @@ else:
         </style>
         """)
 
-    # ─────────────────────────────────────────────
-    # CONFIGURATION/SIDEBAR ACCESS
-    # ─────────────────────────────────────────────
-    with st.sidebar:
-        st.header(t["config_header"])
-        api_key_input = get_rotated_api_key()
-        if len(API_KEYS_POOL) > 0:
-            st.success(t["api_loaded"])
-        else:
-            api_key_input = st.text_input(t["api_label"], type="password", help=t["api_help"])
-            if not api_key_input: st.info(t["api_info"])
-     
-        if st.button(t["clear_chat"]):
-            st.session_state.messages = []
-            st.session_state.pop("chat_session", None)
-            st.session_state.pop("active_api_key", None)
-            st.rerun()
+  
      
     # ─────────────────────────────────────────────
     # UNIFIED NAV BAR
