@@ -443,7 +443,7 @@ else:
 nav_col, toggle_col = st.columns([11, 1])
 
 with toggle_col:
-    st.markdown("<div style='padding-top: 28px;'>", unsafe_allow_html=True)
+    st.markdown("<div style='padding-top: 65px;'>", unsafe_allow_html=True)
     if st.button("English" if is_arabic else "العربية", key="lang_toggle"):
         st.session_state.lang = "Arabic" if st.session_state.lang == "English" else "English"
         st.session_state.pop("chat_session", None)
@@ -453,7 +453,7 @@ with toggle_col:
 
 with nav_col:
     st.html(f"""
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:25px 0 15px 0; margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:65px 0 15px 0; margin-bottom:20px;">
         <div class="brand-block" style="display:flex; align-items:center; gap:12px;">
             <div class="brand-badge">AE</div>
             <div>
