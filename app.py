@@ -439,32 +439,36 @@ else:
     active_driving = "active" if current_filter == "Driving License" else ""
     active_business = "active" if current_filter == "Business License" else ""
 
-    navbar_html = f"""
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 65px 0 15px 0; margin-bottom: 20px; width: 100%;">
-        <div class="brand-block" style="flex: 1; display: flex; justify-content: flex-start;">
+    # Split nav and toggle into columns
+nav_col, toggle_col = st.columns([11, 1])
+
+with toggle_col:
+    st.markdown("<div style='padding-top: 28px;'>", unsafe_allow_html=True)
+    if st.button("English" if is_arabic else "العربية", key="lang_toggle"):
+        st.session_state.lang = "Arabic" if st.session_state.lang == "English" else "English"
+        st.session_state.pop("chat_session", None)
+        st.session_state.messages = []
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with nav_col:
+    st.html(f"""
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:25px 0 15px 0; margin-bottom:20px;">
+        <div class="brand-block" style="display:flex; align-items:center; gap:12px;">
             <div class="brand-badge">AE</div>
             <div>
                 <div class="brand-name">{t["nav_logo"]}</div>
                 <div class="brand-tag">Prototype Agent</div>
             </div>
         </div>
-        <div style="flex: 2; display: flex; justify-content: center; align-items: center;">
-            <div class="custom-nav-links" style="gap: 32px; font-size: 14.5px; display: flex; align-items: center;">
-                <a href="?filter=All#verified-library" target="_self"><span class="{active_all}">{t["nav_home"]}</span></a>
-                <a href="?filter=Visa+Services#verified-library" target="_self"><span class="{active_visa}">{t["nav_visa"]}</span></a>
-                <a href="?filter=Driving+License#verified-library" target="_self"><span class="{active_driving}">{t["nav_driving"]}</span></a>
-                <a href="?filter=Business+License#verified-library" target="_self"><span class="{active_business}">{t["nav_business"]}</span></a>
-            </div>
-        </div>
-        <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center;">
-            <a href="?click=lang_toggle" target="_self" style="
-                text-decoration: none; color: #0F5A41; font-weight: 600; font-size: 15px; padding: 6px 14px; 
-                border: 1px solid #E5E7EB; border-radius: 10px; background-color: #FFFFFF;
-            ">{lang_toggle_text}</a>
+        <div class="custom-nav-links" style="gap:32px; font-size:14.5px; display:flex; align-items:center;">
+            <span>{t["nav_home"]}</span>
+            <span>{t["nav_visa"]}</span>
+            <span>{t["nav_driving"]}</span>
+            <span>{t["nav_business"]}</span>
         </div>
     </div>
-    """
-    st.html(navbar_html)
+    """)
 
     # ─────────────────────────────────────────────
     # PARSE ACTION & LANGUAGE HOOKS
@@ -478,12 +482,7 @@ else:
         st.query_params.clear()
         st.rerun()
 
-    if url_params.get("click") == "lang_toggle":
-        st.query_params.clear()
-        st.session_state.lang = "Arabic" if st.session_state.lang == "English" else "English"
-        st.session_state.pop("chat_session", None)
-        st.session_state.messages = []
-        st.rerun()
+    
 
     if url_params.get("action") == "start_chat":
         st.query_params.clear()
