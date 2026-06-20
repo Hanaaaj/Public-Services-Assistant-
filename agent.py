@@ -1,334 +1,667 @@
 """
-agent.py — UAE Government Services Assistant
-All AI logic: knowledge base loading, TF-IDF retrieval, Gemini LLM calls.
-Import this module in app.py — no Streamlit code here.
+app.py — UAE Government Services Assistant
+Pure Streamlit UI custom-tailored to a pixel-perfect design system.
 """
+import base64
+import streamlit as st
+import random  
+import os     
+ 
+from agent import (
+    UI,
+    load_knowledge_base,
+    build_retrieval_index,
+    retrieve_context,
+    get_gemini_model,
+    start_chat_session,
+    generate_grounded_response,
+)
 
-import json
-import os
-import google.generativeai as genai
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-
-# ─────────────────────────────────────────────
-# SYSTEM PROMPT
-# ─────────────────────────────────────────────
-
-SYSTEM_PROMPT = """You are Daleel, a friendly prototype AI assistant that helps residents, tourists, and people relocating to the UAE understand visa and license requirements, processes, fees, and timelines.
-
-"Daleel" means "guide" in Arabic - which is exactly your role: a knowledgeable, trustworthy guide through UAE visa and license processes, not an official authority.
-
-GREETING AND CONVERSATION STYLE
-- When a conversation begins, greet the user warmly before diving into business. A natural UAE-style welcome works well - for example, opening with a warm "Marhaba" or "Welcome" alongside an English greeting feels appropriate, but keep it light and optional rather than a fixed script every time. You may introduce yourself as Daleel when greeting for the first time.
-- Be genuinely conversational. If the user makes small talk, asks how you are, or chats casually, respond naturally and warmly before or alongside addressing their actual question.
-- Reflect UAE hospitality and warmth in your tone: welcoming, respectful, patient, and generous with reassurance.
-- Keep language universally comfortable for people of any nationality, background, or religion.
-- Adapt formality to the user: if they're casual, be a bit more relaxed; if they write formally, match that register.
-
-YOUR ROLE AND SCOPE
-You help with questions about UAE visas (student, residence, visit/tourist, golden, green, job-seeker, dependent, renewal, cancellation, overstay, etc.) and UAE licenses (driving license, business/trade license, professional license, freelance permit, Emirates ID, and related topics).
-
-You only answer questions within this scope. For anything clearly unrelated to UAE visas, licenses, or closely related government services (e.g. general knowledge questions, coding help, unrelated countries' immigration systems, personal advice unrelated to UAE processes), politely explain that you're focused specifically on UAE visa and license guidance and redirect the user back to that topic. Brief, friendly small talk (greetings, "how are you," thanks) is always fine and not subject to this restriction.
-
-ANSWERING WITH THE KNOWLEDGE BASE
-You will receive a "RETRIEVED CONTEXT" section with each user message, pulled from a curated knowledge base of UAE visa and license workflows. This is your primary and most trustworthy source - always prioritize it over anything else.
-
-1. If RETRIEVED CONTEXT contains relevant information: ground your entire factual answer in it. Never invent or estimate fees, documents, timelines, or eligibility rules beyond what's given.
-2. If RETRIEVED CONTEXT is empty, irrelevant, or only partially covers the question: clearly tell the user that you don't have verified details on that specific point in your current knowledge base. Do not guess or fill the gap with your own general knowledge, since you cannot verify it's current or accurate for UAE rules specifically. Instead, point them to the most relevant official UAE government source for their topic, chosen from this list:
-   - General/all services: u.ae
-   - Visas and Emirates ID: ICP - icp.gov.ae
-   - Dubai visa services: GDRFA Dubai - gdrfad.gov.ae
-   - Driving licenses: RTA - rta.ae
-   - Labor/work permits: MOHRE - mohre.gov.ae
-   - Business/trade licenses: DED - ded.ae
-   Pick the single most relevant one for the user's specific question rather than listing all of them every time.
-3. Never describe yourself as having searched, browsed, or looked something up online - you have not. You are pointing the user to where they can look it up themselves.
-
-LANGUAGE INSTRUCTION
-- You will receive a LANGUAGE INSTRUCTION in every message. Follow it strictly.
-- If told to respond in Arabic, respond entirely in Arabic including all labels, steps, and source references.
-- If told to respond in English, respond entirely in English.
-
-STRICT RULES
-1. Ground every factual claim in the RETRIEVED CONTEXT. Never invent fees, documents, or timelines.
-2. If context is insufficient, say so clearly and direct the user to the single most relevant official source. Do not guess.
-3. Always end substantive factual answers with the official source link framed as "Verify on official source: [link]" - whether that link came from the retrieved context or from the fallback list above.
-4. Never claim to be an official government service or imply official affiliation.
-5. Do not give legal advice or guarantee approval outcomes.
-6. If the user does not meet a requirement, state this clearly and supportively, and explain the next concrete step.
-7. Stay within scope (UAE visas, licenses, and closely related government services) as described above.
-
-TONE AND STYLE
-- Warm, clear, and practical.
-- Use plain language; avoid jargon unless it's an official term.
-- Use numbered lists for process steps.
-- Do not over-elaborate. Answer what was asked, then offer to go deeper.
-
-DISCLAIMER
-If the user thinks this is an official government tool, clarify: "I'm Daleel, a prototype assistant - not an official UAE government service. Always confirm details with the official source before taking action." """
+from welcome import show_welcome_screen
 
 # ─────────────────────────────────────────────
-# UI STRINGS — English & Arabic
+# PAGE CONFIG
 # ─────────────────────────────────────────────
+st.set_page_config(
+    page_title="UAE Gov Services AI Assistant",
+    page_icon="🇦🇪",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
-UI = {
-    "English": {
-        # Sidebar
-       "config_header":     "🔑 Configuration",
-        "api_label":          "Enter Google Gemini API Key",
-        "api_help":           "Free-tier key from Google AI Studio.",
-        "api_loaded":         "🔒 API key loaded from secrets.",
-        "api_info":           "💡 Paste your Gemini API key above to begin.",
-        "verify_hubs":       "### Trusted Verification Hubs",
-        "clear_chat":         "🗑️ Clear Chat",
-        # Disclaimer
-        "disclaimer":        "⚠️ <strong>Prototype Disclaimer:</strong> This application is an independent prototype. It is <strong>NOT</strong> an official government portal. Always confirm details at the official source links provided.",
-        # Nav
-        "nav_logo":          "🇦🇪 UAE Gov Assistant",
-        "nav_home":          "Home",
-        "nav_visa":          "Visa Services",
-        "nav_driving":       "Driving License",
-        "nav_business":      "Business License",
-        "nav_about":         "About",
-        "toggle_btn":        "🌐 العربية",
-        # Hero
-        "hero_title":        "UAE Government<br>Services Assistant",
-        "hero_subtitle":     "AI-Powered Guidance for Visas, Licenses,<br>and Government Services",
-        # Service cards
-        "quick_services":    "Quick Services",
-        "svc_visa":          "Visa Services",
-        "svc_driving":       "Driving License",
-        "svc_business":      "Business License",
-        "svc_renewals":      "Renewals",
-        "svc_faq":           "FAQs",
-        # Chat section
-        "chat_section":      "Main AI Chat Section",
-        "quick_queries":     "⚡ Quick Queries",
-        "btn_student":       "🎓 Student Visa Info",
-        "btn_driving":       "🚗 Convert Driving License",
-        "btn_golden":        "💼 Golden Visa Options",
-        "placeholder":       "Ask about UAE visas, driving renewals, or business licenses...",
-        "verify_source":     "**Verify on official source:**",
-        "thinking":          "Thinking...",
-        # Greeting
-        "greeting":          "Marhaba! I'm Daleel 🇦🇪, your guide to UAE visas and licenses. Ask me anything about visas, driving licenses, or business licenses.",
-        # Footer
-        "footer":            "🏆 Hackathon Prototype · Not affiliated with any UAE government authority · Always verify at <a href='https://u.ae' target='_blank'>u.ae</a>",
-        # Quick query text sent to agent
-        "q_student":         "What are the requirements and process steps for a Student Visa?",
-        "q_driving":         "How can I convert my foreign driving license to a UAE license?",
-        "q_golden":          "What is the eligibility for a Golden Visa?",
-        # Lang instruction for agent
-        "lang_instruction":  "Respond in English.",
-    },
-    "Arabic": {
-        # Sidebar
-      "config_header":     "🔑 الإعدادات",
-        "api_label":          "أدخل مفتاح Google Gemini API",
-        "api_help":           "مفتاح مجاني من Google AI Studio.",
-        "api_loaded":         "🔒 تم تحميل مفتاح API من الأسرار.",
-        "api_info":           "💡 الصق مفتاح Gemini API أعلاه للبدء.",
-        "verify_hubs":       "### روابط التحقق الرسمية",
-        "clear_chat":         "🗑️ مسح المحادثة",
-        # Disclaimer
-        "disclaimer":        "⚠️ <strong>إخلاء مسؤولية:</strong> هذا التطبيق نموذج أولي مستقل. إنه <strong>ليس</strong> بوابة حكومية رسمية. يرجى دائمًا التحقق من التفاصيل عبر روابط المصادر الرسمية.",
-        # Nav
-        "nav_logo":          "🇦🇪 مساعد الحكومة الإماراتية",
-        "nav_home":          "الرئيسية",
-        "nav_visa":          "خدمات التأشيرة",
-        "nav_driving":       "رخصة القيادة",
-        "nav_business":      "الرخصة التجارية",
-        "nav_about":         "عن التطبيق",
-        "toggle_btn":        "🌐 English",
-        # Hero
-        "hero_title":        "مساعد الخدمات<br>الحكومية الإماراتية",
-        "hero_subtitle":     "إرشادات مدعومة بالذكاء الاصطناعي للتأشيرات<br>والتراخيص والخدمات الحكومية",
-        # Service cards
-        "quick_services":    "الخدمات السريعة",
-        "svc_visa":          "خدمات التأشيرة",
-        "svc_driving":       "رخصة القيادة",
-        "svc_business":      "الرخصة التجارية",
-        "svc_renewals":      "التجديدات",
-        "svc_faq":           "الأسئلة الشائعة",
-        # Chat section
-        "chat_section":      "قسم المحادثة مع الذكاء الاصطناعي",
-        "quick_queries":     "⚡ أسئلة سريعة",
-        "btn_student":       "🎓 تأشيرة الطالب",
-        "btn_driving":       "🚗 تحويل رخصة القيادة",
-        "btn_golden":        "💼 التأشيرة الذهبية",
-        "placeholder":       "اسأل عن التأشيرات أو رخص القيادة أو التراخيص التجارية...",
-        "verify_source":     "**تحقق من المصدر الرسمي:**",
-        "thinking":          "جارٍ التفكير...",
-        # Greeting
-        "greeting":          "مرحباً! أنا دليل 🇦🇪، مرشدك لتأشيرات ورخص الإمارات. اسألني عن أي شيء يتعلق بالتأشيرات أو رخص القيادة أو التراخيص التجارية.",
-        # Footer
-        "footer":            "🏆 نموذج أولي للهاكاثون · غير تابع لأي جهة حكومية إماراتية · تحقق دائمًا على <a href='https://u.ae' target='_blank'>u.ae</a>",
-        # Quick query text sent to agent
-        "q_student":         "ما هي متطلبات وخطوات الحصول على تأشيرة الطالب؟",
-        "q_driving":         "كيف يمكنني تحويل رخصة القيادة الأجنبية إلى رخصة إماراتية؟",
-        "q_golden":          "ما هي شروط الحصول على التأشيرة الذهبية؟",
-        # Lang instruction for agent
-        "lang_instruction":  "Respond entirely in Arabic (العربية). All text, steps, labels, and source references must be in Arabic.",
-    },
+#--------------
+st.markdown("""
+<style>
+/* Fix toggle button width so it never shifts layout */
+div[data-testid="column"]:last-child .stButton button {
+    width: 90px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
 }
+</style>
+""", unsafe_allow_html=True)
+#---------------
 
 # ─────────────────────────────────────────────
-# KNOWLEDGE BASE
+# STATE TRACKING INITIALIZATION (Must be done first)
 # ─────────────────────────────────────────────
+if "started" not in st.session_state:
+    st.session_state.started = False
 
-def load_knowledge_base(path: str = "knowledge_base.json") -> list:
-    """Load the curated KB from disk. Returns empty list if not found."""
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+if "lang" not in st.session_state:
+    st.session_state.lang = "English"
 
-# ─────────────────────────────────────────────
-# RETRIEVAL
-# ─────────────────────────────────────────────
+if "selected_library_filter" not in st.session_state:
+    st.session_state.selected_library_filter = "All"
 
-def build_retrieval_index(data: list):
-    """
-    Build a TF-IDF index over the knowledge base.
-    Returns (vectorizer, tfidf_matrix) or (None, None) if data is empty.
-    """
-    if not data:
-        return None, None
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    documents = []
-    for item in data:
-        blob = " ".join([
-            item.get("category", ""),
-            item.get("subcategory", ""),
-            item.get("title", ""),
-            item.get("eligibility", ""),
-            str(item.get("documents", "")),
-            str(item.get("steps", "")),
-        ])
-        documents.append(blob.lower())
-
-    vectorizer = TfidfVectorizer(stop_words="english")
-    tfidf_matrix = vectorizer.fit_transform(documents)
-    return vectorizer, tfidf_matrix
-
-def retrieve_context(
-    query: str,
-    vectorizer,
-    tfidf_matrix,
-    data: list,
-    top_n: int = 2,
-    threshold: float = 0.12,
-) -> tuple[list, str]:
-    """
-    Find the top-n KB entries most relevant to query.
-    Returns (matched_docs list, context_string for LLM prompt).
-    """
-    if vectorizer is None or tfidf_matrix is None:
-        return [], ""
-
-    query_vec = vectorizer.transform([query.lower()])
-    similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
-    top_indices = similarities.argsort()[::-1][:top_n]
-
-    matched_docs = []
-    context_parts = []
-
-    for idx in top_indices:
-        if similarities[idx] >= threshold:
-            item = data[idx]
-            matched_docs.append(item)
-            context_parts.append(
-                f"### {item['title']} ({item['category']}/{item['subcategory']})\n"
-                f"Eligibility: {item.get('eligibility', '')}\n"
-                f"Required Documents: {item.get('documents', '')}\n"
-                f"Process Steps: {item.get('steps', '')}\n"
-                f"Fees: {item.get('fees', '')}\n"
-                f"Processing Time: {item.get('processing_time', '')}\n"
-                f"Official Link: {item.get('official_url', '')}\n"
-            )
-
-    return matched_docs, "\n\n".join(context_parts)
+# Initialize keys array scope before validation routing blocks
+API_KEYS_POOL = []
 
 # ─────────────────────────────────────────────
-# GEMINI MODEL & CHAT SESSION
+# CONDITIONAL VIEW ROUTING
 # ─────────────────────────────────────────────
+if not st.session_state.started:
+    # 1. SHOWS YOUR WELCOME SCREEN CARD
+    show_welcome_screen()
 
-def get_gemini_model(api_key: str):
-    """Configure and return a Gemini GenerativeModel."""
-    genai.configure(api_key=api_key)
-    return genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
-        system_instruction=SYSTEM_PROMPT,
-    )
+else:
+    # Safely building key arrays within clean block structures
+    for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_MEMBER_2", "GEMINI_API_KEY_MEMBER_3"]:
+        try:
+            if secret_key in st.secrets and st.secrets[secret_key]:
+                API_KEYS_POOL.append(st.secrets[secret_key])
+        except Exception:
+            pass
+            
+    if not API_KEYS_POOL and os.getenv("GEMINI_API_KEY"):
+        API_KEYS_POOL.append(os.getenv("GEMINI_API_KEY"))
+     
+    def get_rotated_api_key(manual_key: str = "") -> str:
+        if manual_key:
+            return manual_key
+        if "active_api_key" not in st.session_state:
+            st.session_state.active_api_key = random.choice(API_KEYS_POOL) if API_KEYS_POOL else ""
+        return st.session_state.active_api_key
+     
+    # ─────────────────────────────────────────────
+    # LANGUAGE STATE
+    # ─────────────────────────────────────────────
+    t = UI[st.session_state.lang]         
+    is_arabic = st.session_state.lang == "Arabic"
 
+    # ─────────────────────────────────────────────
+    # INITIALIZE AGENT RETRIEVAL PIPELINE SYSTEM DATA
+    # ─────────────────────────────────────────────
+    @st.cache_resource
+    def initialize_agent_backend():
+        kb_data = load_knowledge_base()
+        vectorizer, tfidf_matrix = build_retrieval_index(kb_data)
+        return kb_data, vectorizer, tfidf_matrix
 
-def start_chat_session(model):
-    """Start a fresh Gemini chat session (stateful multi-turn memory)."""
-    return model.start_chat(history=[])
+    kb_data, vectorizer, tfidf_matrix = initialize_agent_backend()
+     
+    # ─────────────────────────────────────────────
+    # ADVANCED CUSTOM CSS FOR TARGET DESIGN
+    # ─────────────────────────────────────────────
+    st.html("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;600;700;800&display=swap');
+     
+    /* Global Canvas Adjustments */
+    html, body, [class*="css"], .stApp { 
+        font-family: 'Inter', sans-serif; 
+        background-color: #FDFDFB !important;
+    }
 
+    /* Force all text inside chat messages to remain visible black/charcoal */
+    [data-testid="stChatMessage"], [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] div {
+        color: #111827 !important;
+    }
 
-def generate_grounded_response(
-    query: str,
-    context_string: str,
-    chat_session,
-    lang: str = "English",
-) -> str:
-    """
-    Send a RAG-grounded message to the active chat session and return reply text.
-    lang: "English" or "Arabic" — controls response language instruction.
-    """
-    lang_instruction = UI[lang]["lang_instruction"]
+    /* CRITICAL FIX FOR FULL-WIDTH EDGE-TO-EDGE VIEWPORT */
+    .block-container {
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+        padding-left: 3rem !important;
+        padding-right: 3rem !important;
+        max-width: 100% !important;
+    }
 
-    try:
-        full_message = (
-            f"LANGUAGE INSTRUCTION: {lang_instruction}\n\n"
-            f"RETRIEVED CONTEXT:\n{context_string or '(none found for this message)'}\n\n"
-            f"USER QUESTION:\n{query}"
-        )
-        response = chat_session.send_message(full_message)
-        return response.text
-    except Exception as e:
-        error = str(e)
+    /* Custom Side Disclaimer Panel Style */
+    .side-disclaimer {
+        background-color: #FFF6ED;
+        border: 1px solid #FFEDD5;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 12px;
+    }
+    .side-disclaimer-icon {
+        font-size: 18px;
+        color: #C2410C;
+        font-weight: bold;
+    }
+    .side-disclaimer-text {
+        font-size: 13px;
+        color: #9A3412;
+        line-height: 1.5;
+    }
+
+    /* Elegant Custom Top Header Bar */
+    .custom-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        margin-bottom: 20px;
+    }
+    .brand-block {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .brand-badge {
+        background-color: #0F5A41;
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        padding: 8px 12px;
+        border-radius: 12px;
+    }
+    .brand-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        line-height: 1.1;
+    }
+    .brand-tag {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6B7280;
+    }
+    .custom-nav-links {
+        display: flex;
+        gap: 24px;
+        font-size: 14.5px;
+        font-weight: 500;
+        color: #4B5563;
+    }
+    .custom-nav-links a {
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+
+    /* UNIFIED HERO CONTAINER SYSTEM - SLIDESHOW VERSION */
+    .hero-wrapper {
+        border-radius: 24px;
+        height: 420px;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(10, 60, 44, 0.15);
+        margin-top: -30px; /* REMOVES GAP BETWEEN NAVBAR AND HERO */
+        margin-bottom: 40px;
+        overflow: hidden;
+    }
+    
+    /* Sliding Engine (3 Images example) */
+    .hero-slideshow {
+        position: absolute;
+        width: 300%; 
+        height: 100%;
+        display: flex;
+        animation: heroSlider 15s infinite ease-in-out;
+    }
+    
+    .hero-slide {
+        width: 33.333%; 
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+    }
+    
+    /* Animation Keyframes for Automatic Smooth Sliding */
+    @keyframes heroSlider {
+        0%, 28% { transform: translateX(0%); }
+        33%, 61% { transform: translateX(-33.333%); }
+        66%, 95% { transform: translateX(-66.666%); }
+        100% { transform: translateX(0%); }
+    }
+
+    /* Cinematic Dark Tint Gradient to Guarantee Overlay Text Contrast */
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right, rgba(4, 47, 34, 0.95) 40%, rgba(4, 47, 34, 0.5) 70%, rgba(4, 47, 34, 0.2) 100%);
+        z-index: 2;
+    }
+    
+    /* Text Overlay Layout Base Container */
+    .hero-content-container {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 48px;
+    }
+    
+    .hero-left-content { 
+        max-width: 55%; 
+        display: flex; 
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .hero-main-title {
+        font-size: 42px;
+        font-weight: 800;
+        line-height: 1.15;
+        margin-bottom: 20px;
+        color: #FFFFFF;
+    }
+    .hero-main-title span { color: #FBBF24; }
+    .hero-description {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #E2FBF0;
+        margin-bottom: 32px;
+    }
+
+    /* Button Layout Array Group */
+    .hero-btn-group {
+        display: flex;
+        gap: 16px;
+    }
+    .btn-dynamic-chat {
+        background-color: #10B981;
+        color: #042F22 !important;
+        font-weight: 700;
+        font-size: 14px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        border: none;
+    }
+    .btn-browse-library {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #FFFFFF !important;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* Modern Minimalist Service Cards Layout */
+    .cards-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+        margin-bottom: 35px;
+    }
+    .target-card {
+        background: white;
+        border: 1px solid #E5E7EB;
+        border-radius: 16px;
+        padding: 20px 16px;
+    }
+    .target-card .card-icon { font-size: 24px; margin-bottom: 12px; }
+    .target-card .card-title { font-size: 15px; font-weight: 700; color: #111827; }
+    .target-card .card-subtext { font-size: 12px; color: #6B7280; }
+
+    /* Right Side Dashboard Panels */
+    .side-panel {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 24px;
+    }
+    .panel-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1E293B;
+        margin-bottom: 16px;
+    }
+
+    /* Styled Links for the Verification Hub */
+    .hub-link-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #E2E8F0;
+        font-size: 13px;
+        color: #1E293B !important;
+        text-decoration: none !important;
+    }
+
+    /* Custom Library/Data Tables UI */
+    .library-wrapper {
+        background: white;
+        border: 1px solid #E5E7EB;
+        border-radius: 16px;
+        padding: 24px;
+        margin-top: 30px;
+    }
+    .library-title { font-size: 20px; font-weight: 700; color: #111827; }
+
+    /* Table Layout Structure */
+    .custom-table-container { border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
+    .custom-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .custom-table th { background-color: #F8FAFC; color: #1F2937; font-weight: 700; padding: 16px 18px; text-align: left; }
+    .custom-table td { padding: 20px 18px; border-bottom: 1px solid #E2E8F0; vertical-align: top; }
+    .table-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    
+    /* Footer Style Class */
+    .custom-footer-bar { padding: 20px; text-align: center; color: #6B7280; font-size: 12px; margin-top: 40px; }
+    </style>
+    """)
+     
+    # Handle RTL / Arabic Styles Dynamic Loading
+    if is_arabic:
+        st.html("""
+        <style>
+        html, body, [class*="css"], .stApp { font-family: 'Cairo', sans-serif !important; direction: rtl; text-align: right; }
+        .custom-header, .hero-wrapper, .library-header-row { flex-direction: row-reverse; }
+        .custom-table { text-align: right; }
+        .custom-table th { text-align: right; }
+        .hub-link-item { flex-direction: row-reverse; }
+        .side-disclaimer { flex-direction: row-reverse; }
+        .hero-btn-group { flex-direction: row-reverse; }
+        </style>
+        """)
+
+    # Fetch key to ensure backend pipeline runs continuously
+    api_key_input = get_rotated_api_key()
+    if len(API_KEYS_POOL) == 0 and not api_key_input:
+        with st.sidebar:
+            api_key_input = st.text_input(t["api_label"], type="password", help=t["api_help"])
+
+    # ─────────────────────────────────────────────
+    # UNIFIED NAV BAR
+    # ─────────────────────────────────────────────
+    lang_toggle_text = "English" if is_arabic else "العربية"
+    current_filter = st.session_state.selected_library_filter
+
+    # Split nav and toggle into columns
+    nav_col, toggle_col = st.columns([17, 1])
+
+    with toggle_col:
+        st.markdown("<div style='padding-top: 45px;'>", unsafe_allow_html=True)
+        if st.button("English" if is_arabic else "العربية", key="lang_toggle"):
+            st.session_state.lang = "Arabic" if st.session_state.lang == "English" else "English"
+            st.session_state.pop("chat_session", None)
+            st.session_state.messages = []
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with nav_col:
+        st.html(f"""
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:45px 0 0px 0; margin-bottom:10px;">
+            <div class="brand-block" style="display:flex; align-items:center; gap:12px;">
+                <div class="brand-badge">AE</div>
+                <div>
+                    <div class="brand-name">{t["nav_logo"]}</div>
+                    <div class="brand-tag">Prototype Agent</div>
+                </div>
+            </div>
+            <div class="custom-nav-links" style="gap:32px; font-size:14.5px; display:flex; align-items:center;">
+                <span>{t["nav_home"]}</span>
+                <span>{t["nav_visa"]}</span>
+                <span>{t["nav_driving"]}</span>
+                <span>{t["nav_business"]}</span>
+            </div>
+        </div>
+        """)
+
+    # ─────────────────────────────────────────────
+    # PARSE ACTION & LANGUAGE HOOKS
+    # ─────────────────────────────────────────────
+    url_params = st.query_params
+
+    if "filter" in url_params:
+        requested_filter = url_params.get("filter")
+        if requested_filter in ["All", "Visa Services", "Driving License", "Business License"]:
+            st.session_state.selected_library_filter = requested_filter
+        st.query_params.clear()
+        st.rerun()
+
+    if url_params.get("action") == "start_chat":
+        st.query_params.clear()
+        if len(st.session_state.messages) <= 1:
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": "Dynamic chat initialized! How can I guide you through UAE government services today?",
+                "sources": []
+            })
+        st.rerun()
+
+    # ─────────────────────────────────────────────
+    # HERO BANNER LAYOUT
+    # ─────────────────────────────────────────────
+    hero_raw_html = f"""
+    <div class="hero-wrapper">
+        <div class="hero-slideshow">
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1579930700019-f5f6ba3db867?q=80&w=1176');"></div>
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200');"></div>
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1687754715959-41fed2161528?q=80&w=1221');"></div>
+        </div>
         
-        # Self-healing Cache Invalidation logic for Streamlit
-        if "404" in error or "not found" in error.lower():
-            try:
-                import streamlit as st
-                # Purge Streamlit's RAM Cache globally
-                st.cache_resource.clear()
-                st.cache_data.clear()
-                # Remove stale states so they're cleanly recreated on refresh
-                if "chat_session" in st.session_state:
-                    del st.session_state["chat_session"]
-                if "messages" in st.session_state:
-                    st.session_state["messages"] = []
-            except Exception:
-                pass
+        <div class="hero-overlay"></div>
+        
+        <div class="hero-content-container">
+            <div class="hero-left-content">
+                <div class="hero-main-title">UAE Government<br><span>Services Assistant</span></div>
+                <div class="hero-description">
+                    Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.
+                </div>
+                <div class="hero-btn-group">
+                    <a href="?action=start_chat" target="_self" class="btn-dynamic-chat">Start Dynamic Chat &nbsp;➔</a>
+                    <a href="#verified-library" class="btn-browse-library">Browse Verification Library</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    """
+    st.html(hero_raw_html)
+     
+    # ─────────────────────────────────────────────
+    # SPLIT CHAT INTERFACE WINDOW
+    # ─────────────────────────────────────────────
+    if api_key_input and "chat_session" not in st.session_state:
+        model = get_gemini_model(api_key_input)
+        st.session_state.chat_session = start_chat_session(model)
+     
+    if not st.session_state.messages:
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": t["greeting"],
+            "sources": [],
+        })
+
+    chat_col, sidebar_col = st.columns([2, 1])
+
+    with chat_col:
+        for msg in st.session_state.messages:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
+
+        if user_input := st.chat_input(t["placeholder"]):
+            if not api_key_input:
+                st.warning(t["api_info"])
+            else:
+                st.session_state.messages.append({"role": "user", "content": user_input, "sources": []})
+                matched_docs, context_string = retrieve_context(user_input, vectorizer, tfidf_matrix, kb_data)
+                with st.spinner(t["thinking"]):
+                    reply = generate_grounded_response(user_input, context_string, st.session_state.chat_session, lang=st.session_state.lang)
+                st.session_state.messages.append({"role": "assistant", "content": reply, "sources": matched_docs})
+                st.rerun()
+
+    with sidebar_col:
+        st.html(f"""
+        <div class="side-disclaimer">
+            <div class="side-disclaimer-icon">🛈</div>
+            <div class="side-disclaimer-text">
+                <strong>Prototype Disclaimer:</strong> This website is an independent AI prototype built for research and demonstration. It is NOT an official UAE government portal. Always consult and verify regulations directly on official gov source links.
+            </div>
+        </div>
+        <div class="side-panel">
+            <div class="panel-title">🗂️ Trusted Verification Hubs</div>
+            <a href="https://u.ae" target="_blank" class="hub-link-item"><span>Official UAE Portal</span><span class="hub-link-arrow">↗</span></a>
+            <a href="https://icp.gov.ae" target="_blank" class="hub-link-item"><span>ICP National Portal</span><span class="hub-link-arrow">↗</span></a>
+            <a href="https://gdrfad.gov.ae" target="_blank" class="hub-link-item"><span>GDRFA Dubai Services</span><span class="hub-link-arrow">↗</span></a>
+            <a href="https://rta.ae" target="_blank" class="hub-link-item"><span>RTA Traffic Portal</span><span class="hub-link-arrow">↗</span></a>
+            <a href="https://mohre.gov.ae" target="_blank" class="hub-link-item"><span>MOHRE Labour Agency</span><span class="hub-link-arrow">↗</span></a>
+        </div>
+        """)
+
+    # ─────────────────────────────────────────────
+    # VERIFIED SERVICES LIBRARY MATRIX 
+    # ─────────────────────────────────────────────
+    st.html('<div id="verified-library"></div>')
+    st.html('<div class="library-wrapper">')
+
+    lib_header_left, lib_header_right = st.columns([3, 2])
+
+    with lib_header_left:
+        st.html(f'<div class="library-title">📚 Verified Services Library ({st.session_state.selected_library_filter})</div>')
+        st.html('<p style="font-size:13px; color:#6B7280; margin-top: 4px; margin-bottom:0;">Verify criteria, checklists, fee lists, and wait times loaded securely from the agent source.</p>')
+
+    with lib_header_right:
+        st.html('<div class="select-filter-label-group">🔍 Filter Dataset Directory:</div>')
+        filter_options = ["All", "Visa Services", "Driving License", "Business License"]
+        try:
+            current_index = filter_options.index(st.session_state.selected_library_filter)
+        except ValueError:
+            current_index = 0
             
-            if lang == "Arabic":
-                return (
-                    "⚠️ **تم الكشف عن جلسة عمل منتهية الصلاحية (تم مسح التخزين المؤقت تلقائياً)**\n\n"
-                    "لقد أوقفت Google دعم نموذج `gemini-1.5-flash`. لقد قمنا بتحديث النظام ومسح الذاكرة المؤقتة لضمان استقرار العمل.\n\n"
-                    "يرجى **تحديث صفحة المتصفح الآن** لتنشيط النموذج المستقر الجديد `gemini-2.5-flash`."
-                )
-            return (
-                "⚠️ **Stale Chat Session Detected (Cache Cleared Automatically)**\n\n"
-                "Google has retired the legacy `gemini-1.5-flash` model. We have automatically cleared the global cache.\n\n"
-                "Please **refresh your browser page now** to initialize the active, stable `gemini-2.5-flash` model."
-            )
-            
-        if "429" in error or "quota" in error.lower():
-            if lang == "Arabic":
-                return (
-                    "⚠️ **تم الوصول إلى الحد اليومي لطلبات API.**\n\n"
-                    "يُرجى المحاولة لاحقاً أو التحقق مباشرة من:\n"
-                    "- [u.ae](https://u.ae)\n"
-                    "- [icp.gov.ae](https://icp.gov.ae)"
-                )
-            return (
-                "⚠️ **API quota reached for today.**\n\n"
-                "Please try again later or verify directly at:\n"
-                "- [u.ae](https://u.ae)\n"
-                "- [icp.gov.ae](https://icp.gov.ae)"
-            )
-        return f"Something went wrong: {error}"
+        selected_option = st.selectbox(
+            label="Filter Dataset Directory",
+            options=filter_options,
+            index=current_index,
+            label_visibility="collapsed",
+            key="directory_filter_dropdown"
+        )
+        if selected_option != st.session_state.selected_library_filter:
+            st.session_state.selected_library_filter = selected_option
+            st.rerun()
+
+    st.html("<br>")
+
+    all_library_items = [
+        {
+            "category": "Visa Services",
+            "title": "Student Visa Residency Guide",
+            "badge": "Residency",
+            "badge_bg": "#EFF6FF", "badge_color": "#1D4ED8",
+            "eligibility": "Students who are at least 18 years old and studying in an accredited UAE university, college, or academic institution, sponsored by their parent or the educational institution itself.",
+            "checklist": "<strong>Primary documents:</strong><br>• Official admission letter<br>• Valid passport copy<br>• Medical fitness certificate<br>• Health insurance card details",
+            "timeline": "🕒 10 to 15 working days.",
+            "fees": "Registration fee is AED 150. Residency visa issuance fee is AED 100 per year of study. Medical test fee is AED 250."
+        },
+        {
+            "category": "Driving License",
+            "title": "Convert Foreign Driving License to UAE License",
+            "badge": "Conversions",
+            "badge_bg": "#ECFDF5", "badge_color": "#047857",
+            "eligibility": "Holders of a valid national driving license from approved countries (including GCC, UK, US, Canada, EU nations, Japan, Singapore, Australia) who possess a valid UAE residence visa.",
+            "checklist": "<strong>Primary documents:</strong><br>• Valid foreign driving license<br>• Certified legal translation<br>• Valid Emirates ID card<br>• Optical test clearance slip",
+            "timeline": "🕒 Same-day service (immediate printing).",
+            "fees": "File opening fee: AED 200, License issuance fee: AED 600, Knowledge and innovation fee: AED 20."
+        },
+        {
+            "category": "Visa Services",
+            "title": "UAE Golden Visa Options and Eligibility",
+            "badge": "Golden Visa",
+            "badge_bg": "#F5F3FF", "badge_color": "#6D28D9",
+            "eligibility": "Real estate investors (property worth AED 2 million or more), entrepreneurs (with capital of AED 500k+), highly talented professionals, scientists, researchers, doctors, and exceptional outstanding students.",
+            "checklist": "<strong>Primary documents:</strong><br>• Property title deed proof<br>• Accredited degree certificate<br>• Professional recommendation letters<br>• Complete active audit reports",
+            "timeline": "🕒 7 to 10 working days.",
+            "fees": "Nomination request fee: AED 150, 10-year Golden Visa fee: AED 2,800, Emirates ID charge: AED 1,000."
+        },
+        {
+            "category": "Driving License",
+            "title": "UAE Driving License Renewal Process",
+            "badge": "Renewals",
+            "badge_bg": "#FFFBEB", "badge_color": "#B45309",
+            "eligibility": "All residents and citizens holding an active or expired UAE driving license. Active licenses can be renewed up to 1 year prior to expiry.",
+            "checklist": "<strong>Primary documents:</strong><br>• Valid Emirates ID card<br>• Expired driving license log<br>• Registered eye test record",
+            "timeline": "🕒 3 to 5 working days for delivery; digital version available immediately.",
+            "fees": "Renewal fee for age 21+: AED 300, Fee for under 21: AED 100, Eye test: AED 150-180, Courier charge: AED 25."
+        },
+        {
+            "category": "Business License",
+            "title": "Dubai Virtual Company License Guide",
+            "badge": "Formation",
+            "badge_bg": "#FEF2F2", "badge_color": "#B91C1C",
+            "eligibility": "Global business owners and non-residents from over 100 approved countries, for sectors including creative, technology, and services.",
+            "checklist": "<strong>Primary documents:</strong><br>• Valid passport identification<br>• Global residency verification<br>• Corporate background screening",
+            "timeline": "🕒 25 to 30 working days.",
+            "fees": "1-year virtual license: USD 233 (AED 850), Registry fee: USD 100."
+        }
+    ]
+
+    filtered_items = [
+        item for item in all_library_items \
+        if st.session_state.selected_library_filter == "All" or item["category"] == st.session_state.selected_library_filter
+    ]
+
+    table_rows = []
+    for item in filtered_items:
+        row_html = (
+            f"<tr>"
+            f"<td style='width: 22%;'><strong style='color: #111827; font-size: 14.5px; display: block; margin-bottom: 8px;'>{item['title']}</strong>"
+            f"<span class='table-badge' style='background:{item['badge_bg']}; color:{item['badge_color']};'>{item['badge']}</span></td>"
+            f"<td style='width: 23%; color:#374151;'>{item['eligibility']}</td>"
+            f"<td style='width: 23%; color:#374151;'>{item['checklist']}</td>"
+            f"<td style='width: 14%; color:#4B5563; font-weight: 500;'>{item['timeline']}</td>"
+            f"<td style='width: 18%; color:#111827; font-weight: 600; text-align:right;'>{item['fees']}</td>"
+            f"</tr>"
+        )
+        table_rows.append(row_html)
+
+    if not table_rows:
+        table_rows_html = "<tr><td colspan='5' style='text-align:center; padding:40px; color:#9CA3AF;'>No records available for this filter group.</td></tr>"
+    else:
+        table_rows_html = "".join(table_rows)
+
+    full_matrix_html = (
+        "<div class='custom-table-container'>"
+        "<table class='custom-table'>"
+        "<thead>"
+        "<tr>"
+        "<th style='width: 22%;'>Service Title / Tag</th>"
+        "<th style='width: 23%;'>Typical Eligibility Criteria</th>"
+        "<th style='width: 23%;'>Required Checklists</th>"
+        "<th style='width: 14%;'>Processing Timeline</th>"
+        "<th style='width: 18%; text-align:right;'>Standard Fees</th>"
+        "</tr>"
+        "</thead>"
+        "<tbody>"
+        f"{table_rows_html}"
+        "</tbody>"
+        "</table>"
+        "</div>"
+    )
+    st.html(full_matrix_html)
+    st.html('</div>')  # Securely close library-wrapper container
+
+    # ─────────────────────────────────────────────
+    # PROTOTYPE BOTTOM FOOTER BAR
+    # ─────────────────────────────────────────────
+    st.html("""
+    <div class="custom-footer-bar">
+        © 2026 Engineering Prototype Framework Platform Assembly. Developed for Research Sandbox Evaluations.
+    </div>
+    """)
