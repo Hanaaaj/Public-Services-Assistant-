@@ -4,6 +4,7 @@ Pure Streamlit UI custom-tailored to a pixel-perfect design system.
 """
 import base64
 import streamlit as st
+import streamlit.components.v1 as components
 import random  
 import os     
  
@@ -56,6 +57,9 @@ if "selected_library_filter" not in st.session_state:
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+if "scroll_to_chat" not in st.session_state:
+    st.session_state.scroll_to_chat = False
 
 # Initialize keys array scope before validation routing blocks
 API_KEYS_POOL = []
@@ -279,21 +283,25 @@ else:
     .hero-btn-group {
         display: flex;
         gap: 16px;
-    }
-    .btn-dynamic-chat {
-        background-color: #10B981;
-        color: #042F22 !important;
-        font-weight: 700;
-        font-size: 14px;
-        padding: 12px 24px;
-        border-radius: 12px;
-        text-decoration: none !important;
-        display: inline-flex;
         align-items: center;
-        gap: 8px;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-        border: none;
     }
+
+    /* INLINE STYLING HOOK TO CONVERT STREAMLIT BUTTON INTO HERO CALL-TO-ACTION */
+    div.hero-chat-btn-wrapper button {
+        background-color: #10B981 !important;
+        color: #042F22 !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        padding: 12px 24px !important;
+        border-radius: 12px !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+        transition: transform 0.1s ease;
+    }
+    div.hero-chat-btn-wrapper button:hover {
+        transform: scale(1.02);
+    }
+    
     .btn-browse-library {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -305,6 +313,7 @@ else:
         text-decoration: none !important;
         display: inline-flex;
         align-items: center;
+        height: 45px;
     }
 
     /* Modern Minimalist Service Cards Layout */
@@ -393,12 +402,11 @@ else:
             api_key_input = st.text_input(t["api_label"], type="password", help=t["api_help"])
 
     # ─────────────────────────────────────────────
-    # UNIFIED NAV BAR (Indented properly into else block)
+    # UNIFIED NAV BAR 
     # ─────────────────────────────────────────────
     lang_toggle_text = "English" if is_arabic else "العربية"
     current_filter = st.session_state.selected_library_filter
 
-    # Split nav and toggle into columns
     nav_col, toggle_col = st.columns([17, 1])
 
     with toggle_col:
@@ -430,57 +438,70 @@ else:
         """)
 
     # ─────────────────────────────────────────────
-    # PARSE ACTION & LANGUAGE HOOKS
+    # HERO BANNER LAYOUT (Using Native Callback Injection)
     # ─────────────────────────────────────────────
-    url_params = st.query_params
-
-    if "filter" in url_params:
-        requested_filter = url_params.get("filter")
-        if requested_filter in ["All", "Visa Services", "Driving License", "Business License"]:
-            st.session_state.selected_library_filter = requested_filter
-        st.query_params.clear()
-        st.rerun()
-
-    if url_params.get("action") == "start_chat":
-        st.query_params.clear()
-        # Ensure greeting isn't duplicated, append initialization notice
-        if len(st.session_state.messages) <= 1:
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": "Dynamic chat initialized! How can I guide you through UAE government services today?",
-                "sources": []
-            })
-        st.rerun()
-
-    # ─────────────────────────────────────────────
-    # HERO BANNER LAYOUT
-    # ─────────────────────────────────────────────
-    hero_raw_html = f"""
+    # Render layout background architecture first
+    st.html("""
     <div class="hero-wrapper">
         <div class="hero-slideshow">
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1579930700019-f5f6ba3db867?q=80&w=1176');"></div>
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200');"></div>
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1687754715959-41fed2161528?q=80&w=1221');"></div>
         </div>
-        
         <div class="hero-overlay"></div>
-        
-        <div class="hero-content-container">
-            <div class="hero-left-content">
-                <div class="hero-main-title">UAE Government<br><span>Services Assistant</span></div>
-                <div class="hero-description">
-                    Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.
-                </div>
-                <div class="hero-btn-group">
-                    <a href="?action=start_chat#chat-section" target="_self" class="btn-dynamic-chat">Start Dynamic Chat &nbsp;➔</a>
-                    <a href="#verified-library" class="btn-browse-library">Browse Verification Library</a>
-                </div>
-            </div>
-        </div>
     </div>
-    """
-    st.html(hero_raw_html)
-     
+    """)
+
+    # Overprint foreground text layers and execution buttons over slide tracks
+    st.markdown("""
+    <style>
+    .hero-absolute-container {
+        position: absolute;
+        top: 150px;
+        left: 80px;
+        z-index: 10;
+        max-width: 55%;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    with st.container():
+        st.markdown('<div class="hero-absolute-container">', unsafe_allow_html=True)
+        st.markdown('<div class="hero-main-title" style="color:white; font-size:42px; font-weight:800; line-height:1.15; margin-bottom:20px;">UAE Government<br><span style="color:#FBBF24;">Services Assistant</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="hero-description" style="color:#E2FBF0; font-size:15px; line-height:1.6; margin-bottom:32px;">Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.</div>', unsafe_allow_html=True)
+        
+        # Split row layout specifically for cleanly housing buttons side-by-side
+        btn_layout_l, btn_layout_r = st.columns([1, 2])
+        with btn_layout_l:
+            st.markdown('<div class="hero-chat-btn-wrapper">', unsafe_allow_html=True)
+            if st.button("Start Dynamic Chat ➔", key="hero_start_chat_trigger"):
+                st.session_state.scroll_to_chat = True
+                if len(st.session_state.messages) <= 1:
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": "Dynamic chat initialized! How can I guide you through UAE government services today?",
+                        "sources": []
+                    })
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        with btn_layout_r:
+            st.markdown('<a href="#verified-library" class="btn-browse-library">Browse Verification Library</a>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # ─────────────────────────────────────────────
+    # JAVASCRIPT SCROLL CONTROLLER INJECTION
+    # ─────────────────────────────────────────────
+    if st.session_state.scroll_to_chat:
+        st.session_state.scroll_to_chat = False # Reset state
+        components.html("""
+        <script>
+            window.parent.document.getElementById('chat-section').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        </script>
+        """, height=0, width=0)
+
     # ─────────────────────────────────────────────
     # SPLIT CHAT INTERFACE WINDOW
     # ─────────────────────────────────────────────
@@ -495,8 +516,8 @@ else:
             "sources": [],
         })
 
-    # Added HTML anchor mapping targets for dynamic URL routing
-    st.html('<div id="chat-section" style="padding-top: 20px;"></div>')
+    # Added HTML anchor mapping targets for dynamic execution
+    st.markdown('<div id="chat-section" style="padding-top: 60px;"></div>', unsafe_allow_html=True)
     chat_col, sidebar_col = st.columns([2, 1])
 
     with chat_col:
@@ -536,7 +557,7 @@ else:
     # ─────────────────────────────────────────────
     # VERIFIED SERVICES LIBRARY MATRIX 
     # ─────────────────────────────────────────────
-    st.html('<div id="verified-library" style="padding-top: 20px;"></div>')
+    st.html('<div id="verified-library" style="padding-top: 60px;"></div>')
     st.html('<div class="library-wrapper">')
 
     lib_header_left, lib_header_right = st.columns([3, 2])
