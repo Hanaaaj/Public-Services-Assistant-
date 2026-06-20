@@ -6,7 +6,7 @@ import base64
 def show_welcome_screen():
     st.markdown("""
     <style>
-    .stApp {
+    .stApp 
         background: linear-gradient(
             135deg,
             #022C22 0%,
@@ -14,15 +14,6 @@ def show_welcome_screen():
             #15803D 70%,
             #022C22 100%
         );
-    }
-
-    /* ── STREAMLIT WRAPPER BUSTER ── */
-    div[data-testid="stMarkdownContainer"] {
-        width: 100% !important;
-    }
-    
-    div[data-testid="stMarkdownContainer"] img {
-        max-width: none !important;
     }
 
     .main-container {
@@ -49,18 +40,16 @@ def show_welcome_screen():
         color: #FFFFFF !important;
     }
 
-    .logo-large {
-        width: 360px !important;
-        height: 360px !important;
-        min-width: 360px !important;
-        min-height: 360px !important;
-        object-fit: contain !important;
-        background-color: #FFFFFF !important;
-        border-radius: 50% !important;
-        border: 3px solid rgba(255, 255, 255, 0.9) !important;
-        margin: 0 auto 20px auto !important;
-        display: block !important;
-        padding: 15px !important;
+    .logo {
+        width: 220px;
+        height: 220px;
+        object-fit: contain;
+        background-color: #FFFFFF;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.9);
+        margin: 0 auto 20px auto;
+        display: block;
+        padding: 15px;
         animation: logoFloat 2s ease-in-out;
     }
 
@@ -71,37 +60,6 @@ def show_welcome_screen():
         margin-top: 10px;
         margin-bottom: 20px;
         min-height: 80px;
-    }
-
-    /* ── ULTIMATE PRIORITY TARGETING FOR THE BUTTON ── */
-    /* Forces background container styling */
-    div.stButton > button[data-testid="baseButton-secondary"],
-    div.stButton > button {
-        background-color: #FBBF24 !important; 
-        border-radius: 12px !important;       
-        border: none !important;              
-        height: 50px !important;              
-        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4) !important; 
-        transition: all 0.2s ease-in-out !important;
-    }
-
-    /* Forces text styling inside the button label elements */
-    div.stButton > button p,
-    div.stButton > button span,
-    div.stButton > button div {
-        color: #022C22 !important;            
-        font-weight: 700 !important;
-        font-size: 16px !important;
-    }
-
-    /* Hover updates */
-    div.stButton > button:hover {
-        background-color: #F59E0B !important; 
-        transform: translateY(-1px) !important;
-    }
-    
-    div.stButton > button:hover p {
-        color: #022C22 !important;
     }
 
     @keyframes fadeIn {
@@ -135,7 +93,7 @@ def show_welcome_screen():
                 f"""
                 <div class="main-container">
                     <div class="glass-card">
-                        <img src="{image_src}" class="logo-large">
+                        <img src="{image_src}" class="logo">
                         <h1 class="typed-title">{typed}</h1>
                         <div style='text-align:center;'>
                             <p style="font-size:16px; color:#D1D5DB; letter-spacing:1px; font-weight: 500;">دليل • Guide</p>
@@ -158,7 +116,7 @@ def show_welcome_screen():
             f"""
             <div class="main-container">
                 <div class="glass-card">
-                    <img src="{image_src}" class="logo-large">
+                    <img src="{image_src}" class="logo">
                     <h1 class="typed-title">{title}</h1>
                     <div style='text-align:center;'>
                         <p style="font-size:16px; color:#D1D5DB; letter-spacing:1px; font-weight: 500;">دليل • Guide</p>
@@ -181,3 +139,5 @@ def show_welcome_screen():
         if st.button(" Get Started", use_container_width=True):
             st.session_state.started = True
             st.rerun()
+
+
