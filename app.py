@@ -680,8 +680,3 @@ else:
         © 2026 UAE Government Services Assistant · Hackathon Prototype · Not affiliated with any UAE government authority
     </div>
     """)
-ENDOFFILE
-Output
-
-exit code 0
-Done
