@@ -577,21 +577,6 @@ else:
         st.markdown(f"#### 🤖 {t['chat_section']}")
         st.markdown(f"<span style='font-size:13px; font-weight:600; color:#6B7280;'>{t['quick_queries']}</span>", unsafe_allow_html=True)
         
-        q_btn_cols = st.columns(3)
-        quick_query = None
-        with q_btn_cols[0]:
-            if st.button(t["btn_student"]): quick_query = t["q_student"]
-        with q_btn_cols[1]:
-            if st.button(t["btn_driving"]): quick_query = t["q_driving"]
-        with q_btn_cols[2]:
-            if st.button(t["btn_golden"]): quick_query = t["q_golden"]
-            
-        if quick_query and api_key_input:
-            matched_docs, context_string = retrieve_context(quick_query, vectorizer, tfidf_matrix, kb_data)
-            reply = generate_grounded_response(quick_query, context_string, st.session_state.chat_session, lang=st.session_state.lang)
-            st.session_state.messages.append({"role": "user", "content": quick_query, "sources": []})
-            st.session_state.messages.append({"role": "assistant", "content": reply, "sources": matched_docs})
-            st.rerun()
 
         st.markdown('<div style="background:white; border:1px solid #E5E7EB; border-radius:16px; padding:20px; margin-top:10px;">', unsafe_allow_html=True)
         for msg in st.session_state.messages:
