@@ -6,7 +6,7 @@ import base64
 def show_welcome_screen():
     st.markdown("""
     <style>
-    .stApp 
+    .stApp {
         background: linear-gradient(
             135deg,
             #022C22 0%,
@@ -41,8 +41,6 @@ def show_welcome_screen():
     }
 
     .logo {
-        width: 220px;
-        height: 220px;
         object-fit: contain;
         background-color: #FFFFFF;
         border-radius: 50%;
@@ -75,16 +73,19 @@ def show_welcome_screen():
     """, unsafe_allow_html=True)
 
     try:
-        with open("LOGO.jpeg", "rb") as f:
+        with open("LOGO1.png", "rb") as f:
             data = f.read()
             encoded_image = base64.b64encode(data).decode()
         image_src = f"data:image/png;base64,{encoded_image}"
     except FileNotFoundError:
-        image_src = "LOGO.jpeg"
+        image_src = "LOGO1.png"
 
     container_placeholder = st.empty()
     title = "Welcome to Daleel — دليل "
     typed = ""
+
+    # Forced dimensions for the image tag
+    logo_forced_style = 'width="340" height="340" style="width: 340px !important; height: 340px !important;"'
 
     if "animation_done" not in st.session_state:
         for char in title:
@@ -93,7 +94,7 @@ def show_welcome_screen():
                 f"""
                 <div class="main-container">
                     <div class="glass-card">
-                        <img src="{image_src}" class="logo">
+                        <img src="{image_src}" class="logo" {logo_forced_style}>
                         <h1 class="typed-title">{typed}</h1>
                         <div style='text-align:center;'>
                             <p style="font-size:16px; color:#D1D5DB; letter-spacing:1px; font-weight: 500;">دليل • Guide</p>
@@ -116,7 +117,7 @@ def show_welcome_screen():
             f"""
             <div class="main-container">
                 <div class="glass-card">
-                    <img src="{image_src}" class="logo">
+                    <img src="{image_src}" class="logo" {logo_forced_style}>
                     <h1 class="typed-title">{title}</h1>
                     <div style='text-align:center;'>
                         <p style="font-size:16px; color:#D1D5DB; letter-spacing:1px; font-weight: 500;">دليل • Guide</p>
