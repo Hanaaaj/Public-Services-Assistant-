@@ -53,7 +53,36 @@ API_KEYS_POOL = []
 if not st.session_state.started:
     # 1. SHOWS YOUR WELCOME SCREEN CARD
     show_welcome_screen()
+# Split nav and toggle into columns
+nav_col, toggle_col = st.columns([11, 1])
 
+with toggle_col:
+    st.markdown("<div style='padding-top: 28px;'>", unsafe_allow_html=True)
+    if st.button("English" if is_arabic else "العربية", key="lang_toggle"):
+        st.session_state.lang = "Arabic" if st.session_state.lang == "English" else "English"
+        st.session_state.pop("chat_session", None)
+        st.session_state.messages = []
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with nav_col:
+    st.html(f"""
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:25px 0 15px 0; margin-bottom:20px;">
+        <div class="brand-block" style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-badge">AE</div>
+            <div>
+                <div class="brand-name">{t["nav_logo"]}</div>
+                <div class="brand-tag">Prototype Agent</div>
+            </div>
+        </div>
+        <div class="custom-nav-links" style="gap:32px; font-size:14.5px; display:flex; align-items:center;">
+            <span>{t["nav_home"]}</span>
+            <span>{t["nav_visa"]}</span>
+            <span>{t["nav_driving"]}</span>
+            <span>{t["nav_business"]}</span>
+        </div>
+    </div>
+    """)
 else:
     # Safely building key arrays within clean block structures
     for secret_key in ["GEMINI_API_KEY", "GEMINI_API_KEY_MEMBER_1", "GEMINI_API_KEY_MEMBER_2", "GEMINI_API_KEY_MEMBER_3"]:
@@ -440,7 +469,7 @@ else:
     active_business = "active" if current_filter == "Business License" else ""
 
     # Split nav and toggle into columns
-nav_col, toggle_col = st.columns([10, 2])
+nav_col, toggle_col = st.columns([11,1])
 
 with toggle_col:
     st.markdown("<div style='padding-top: 65px;'>", unsafe_allow_html=True)
