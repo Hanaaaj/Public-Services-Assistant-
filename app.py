@@ -419,7 +419,11 @@ if is_arabic:
     }
     
     /* ── SLIDESHOW EXCEPTION — must stay LTR ── */
-    .hero-slideshow { direction: ltr !important; }
+    .hero-slideshow {
+    direction: ltr !important;
+    animation-direction: normal !important;
+}
+
     .hero-slide     { direction: ltr !important; }
 
     /* Keep text inside hero RTL */
