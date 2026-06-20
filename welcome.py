@@ -17,7 +17,6 @@ def show_welcome_screen():
     }
 
     /* ── STREAMLIT WRAPPER BUSTER ── */
-    /* Forces Streamlit's inner Markdown containers to let the image expand */
     div[data-testid="stMarkdownContainer"] {
         width: 100% !important;
     }
@@ -50,7 +49,6 @@ def show_welcome_screen():
         color: #FFFFFF !important;
     }
 
-    /* ── MAX FORCED LOGO CLASSES ── */
     .logo-large {
         width: 360px !important;
         height: 360px !important;
@@ -73,6 +71,25 @@ def show_welcome_screen():
         margin-top: 10px;
         margin-bottom: 20px;
         min-height: 80px;
+    }
+
+    /* ── TARGET THE WELCOME BUTTON DIRECTLY ── */
+    div.stButton > button {
+        background-color: #FBBF24 !important; /* Premium Amber Gold */
+        color: #022C22 !important;            /* Contrast deep green text */
+        font-weight: 700 !important;          
+        border-radius: 12px !important;       /* Clean sleek corners */
+        border: none !important;              
+        height: 50px !important;              
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3) !important; /* Colorful soft glow */
+        transition: all 0.2s ease-in-out !important;
+    }
+
+    /* Hover effect styling */
+    div.stButton > button:hover {
+        background-color: #F59E0B !important; /* Slightly richer gold on hover */
+        color: #022C22 !important;
+        transform: translateY(-1px) !important;
     }
 
     @keyframes fadeIn {
