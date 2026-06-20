@@ -377,7 +377,7 @@ else:
                 </div>
             </div>
             <div class="custom-nav-links" style="gap:32px; font-size:14.5px;
-                                                  display:flex; align-items:center;">
+                                                 display:flex; align-items:center;">
                 <span>{t["nav_home"]}</span>
                 <span>{t["nav_visa"]}</span>
                 <span>{t["nav_driving"]}</span>
@@ -489,7 +489,7 @@ else:
     chat_col, sidebar_col = st.columns([2, 1])
 
     with chat_col:
-     for msg in st.session_state.messages:
+        for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
                 if msg.get("sources") and msg["role"] == "assistant":
