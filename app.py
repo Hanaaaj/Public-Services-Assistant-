@@ -416,10 +416,10 @@ else:
                 </div>
             </div>
             <div class="custom-nav-links" style="gap:32px; font-size:14.5px; display:flex; align-items:center;">
-                <span>{t["nav_home"]}</span>
-                <span>{t["nav_visa"]}</span>
-                <span>{t["nav_driving"]}</span>
-                <span>{t["nav_business"]}</span>
+                <a href="?filter=All" target="_self" style="text-decoration:none; color:#4B5563; transition:color 0.2s;" onmouseover="this.style.color='#FBBF24'" onmouseout="this.style.color='#4B5563'">{t["nav_home"]}</a>
+                <a href="?filter=Visa Services" target="_self" style="text-decoration:none; color:#4B5563; transition:color 0.2s;" onmouseover="this.style.color='#FBBF24'" onmouseout="this.style.color='#4B5563'">{t["nav_visa"]}</a>
+                <a href="?filter=Driving License" target="_self" style="text-decoration:none; color:#4B5563; transition:color 0.2s;" onmouseover="this.style.color='#FBBF24'" onmouseout="this.style.color='#4B5563'">{t["nav_driving"]}</a>
+                <a href="?filter=Business License" target="_self" style="text-decoration:none; color:#4B5563; transition:color 0.2s;" onmouseover="this.style.color='#FBBF24'" onmouseout="this.style.color='#4B5563'">{t["nav_business"]}</a>
             </div>
         </div>
         """)
