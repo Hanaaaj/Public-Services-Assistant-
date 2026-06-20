@@ -453,7 +453,7 @@ with toggle_col:
 
 with nav_col:
     st.html(f"""
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:25px 0 15px 0; margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:65px 0 15px 0; margin-bottom:20px;">
         <div class="brand-block" style="display:flex; align-items:center; gap:12px;">
             <div class="brand-badge">AE</div>
             <div>
