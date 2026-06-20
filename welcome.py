@@ -40,7 +40,7 @@ def show_welcome_screen():
         color: #FFFFFF !important;
     }
 
-    .logo1 {
+    .logo {
         width: 220px;
         height: 220px;
         object-fit: contain;
