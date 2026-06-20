@@ -30,15 +30,17 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-# STATE TRACKING INITIALIZATION
+# STATE TRACKING & URL INTERCEPTION
 # ─────────────────────────────────────────────
-if "started" not in st.session_state:
-    st.session_state.started = False
-
-# ACTION HOOK: Force entry straight to chat layout if action requested
+# 1. INTERCEPT CHAT ACTION IMMEDIATELY BEFORE ANY RENDERING
 if st.query_params.get("action") == "start_chat":
     st.session_state.started = True
-    st.query_params.clear()
+    st.query_params.clear()  # Clear query parameter to avoid infinite loops
+    st.rerun()               # Halt execution immediately and rebuild state as True
+
+# 2. DEFAULT FALLBACK INITIALIZATIONS
+if "started" not in st.session_state:
+    st.session_state.started = False
 
 if "lang" not in st.session_state:
     st.session_state.lang = "English"
