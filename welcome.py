@@ -16,6 +16,16 @@ def show_welcome_screen():
         );
     }
 
+    /* ── STREAMLIT WRAPPER BUSTER ── */
+    /* Forces Streamlit's inner Markdown containers to let the image expand */
+    div[data-testid="stMarkdownContainer"] {
+        width: 100% !important;
+    }
+    
+    div[data-testid="stMarkdownContainer"] img {
+        max-width: none !important;
+    }
+
     .main-container {
         display: flex;
         justify-content: center;
@@ -40,14 +50,19 @@ def show_welcome_screen():
         color: #FFFFFF !important;
     }
 
-    .logo {
-        object-fit: contain;
-        background-color: #FFFFFF;
-        border-radius: 50%;
-        border: 3px solid rgba(255, 255, 255, 0.9);
-        margin: 0 auto 20px auto;
-        display: block;
-        padding: 15px;
+    /* ── MAX FORCED LOGO CLASSES ── */
+    .logo-large {
+        width: 360px !important;
+        height: 360px !important;
+        min-width: 360px !important;
+        min-height: 360px !important;
+        object-fit: contain !important;
+        background-color: #FFFFFF !important;
+        border-radius: 50% !important;
+        border: 3px solid rgba(255, 255, 255, 0.9) !important;
+        margin: 0 auto 20px auto !important;
+        display: block !important;
+        padding: 15px !important;
         animation: logoFloat 2s ease-in-out;
     }
 
@@ -73,19 +88,16 @@ def show_welcome_screen():
     """, unsafe_allow_html=True)
 
     try:
-        with open("LOGO.jpeg", "rb") as f:
+        with open("LOGO1.png", "rb") as f:
             data = f.read()
             encoded_image = base64.b64encode(data).decode()
         image_src = f"data:image/png;base64,{encoded_image}"
     except FileNotFoundError:
-        image_src = "LOGO.jpeg"
+        image_src = "LOGO1.png"
 
     container_placeholder = st.empty()
     title = "Welcome to Daleel — دليل "
     typed = ""
-
-    # Forced dimensions for the image tag
-    logo_forced_style = 'width="340" height="340" style="width: 340px !important; height: 340px !important;"'
 
     if "animation_done" not in st.session_state:
         for char in title:
@@ -94,7 +106,7 @@ def show_welcome_screen():
                 f"""
                 <div class="main-container">
                     <div class="glass-card">
-                        <img src="{image_src}" class="logo" {logo_forced_style}>
+                        <img src="{image_src}" class="logo-large">
                         <h1 class="typed-title">{typed}</h1>
                         <div style='text-align:center;'>
                             <p style="font-size:16px; color:#D1D5DB; letter-spacing:1px; font-weight: 500;">دليل • Guide</p>
@@ -117,7 +129,7 @@ def show_welcome_screen():
             f"""
             <div class="main-container">
                 <div class="glass-card">
-                    <img src="{image_src}" class="logo" {logo_forced_style}>
+                    <img src="{image_src}" class="logo-large">
                     <h1 class="typed-title">{title}</h1>
                     <div style='text-align:center;'>
                         <p style="font-size:16px; color:#D1D5DB; letter-spacing:1px; font-weight: 500;">دليل • Guide</p>
