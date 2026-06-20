@@ -408,38 +408,20 @@ else:
     .custom-footer-bar { padding: 20px; text-align: center; color: #6B7280; font-size: 12px; margin-top: 40px; }
     </style>
     """)
-
-if is_arabic:
-    st.html("""
-    <style>
-    html, body, [class*="css"], .stApp { 
-        font-family: 'Cairo', sans-serif !important; 
-        direction: rtl; 
-        text-align: right; 
-    }
-    
-    /* ── SLIDESHOW EXCEPTION — must stay LTR ── */
-    .hero-slideshow { direction: ltr !important; }
-    .hero-slide     { direction: ltr !important; }
-
-    /* Keep text inside hero RTL */
-    .hero-left-content,
-    .hero-main-title,
-    .hero-description,
-    .hero-btn-group { 
-        direction: rtl !important; 
-        text-align: right !important; 
-    }
-    
-    .custom-header, .hero-wrapper, .library-header-row { flex-direction: row-reverse; }
-    .custom-table { text-align: right; }
-    .custom-table th { text-align: right; }
-    .hub-link-item { flex-direction: row-reverse; }
-    .side-disclaimer { flex-direction: row-reverse; }
-    .hero-btn-group { flex-direction: row-reverse; }
-    </style>
-    """)
-
+     
+    # Handle RTL / Arabic Styles Dynamic Loading
+    if is_arabic:
+        st.html("""
+        <style>
+        html, body, [class*="css"], .stApp { font-family: 'Cairo', sans-serif !important; direction: rtl; text-align: right; }
+        .custom-header, .hero-wrapper, .library-header-row { flex-direction: row-reverse; }
+        .custom-table { text-align: right; }
+        .custom-table th { text-align: right; }
+        .hub-link-item { flex-direction: row-reverse; }
+        .side-disclaimer { flex-direction: row-reverse; }
+        .hero-btn-group { flex-direction: row-reverse; }
+        </style>
+        """)
 
     # ─────────────────────────────────────────────
     # CONFIGURATION/SIDEBAR ACCESS (UI elements removed)
@@ -471,7 +453,7 @@ if is_arabic:
     active_business = "active" if current_filter == "Business License" else ""
 
     # Split nav and toggle into columns
-nav_col, toggle_col = st.columns([17,1])
+nav_col, toggle_col = st.columns([11,2])
 
 with toggle_col:
     st.markdown("<div style='padding-top: 65px;'>", unsafe_allow_html=True)
