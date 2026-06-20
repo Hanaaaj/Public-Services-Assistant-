@@ -437,40 +437,7 @@ else:
     </div>
     """)
 
-    # ─────────────────────────────────────────────
-    # SERVICE CARDS
-    # ─────────────────────────────────────────────
-    current_filter = st.session_state.selected_library_filter
-
-    st.html(f"""
-    <div class="cards-row">
-        <div class="target-card {'active-card' if current_filter == 'Visa Services' else ''}">
-            <div class="card-icon">🛂</div>
-            <div class="card-title">{t["svc_visa"]}</div>
-            <div class="card-subtext">Golden, Student, Resident</div>
-        </div>
-        <div class="target-card {'active-card' if current_filter == 'Driving License' else ''}">
-            <div class="card-icon">🚗</div>
-            <div class="card-title">{t["svc_driving"]}</div>
-            <div class="card-subtext">Convert, Renew, Eye Tests</div>
-        </div>
-        <div class="target-card {'active-card' if current_filter == 'Business License' else ''}">
-            <div class="card-icon">🏢</div>
-            <div class="card-title">{t["svc_business"]}</div>
-            <div class="card-subtext">Freezone, Virtual Licenses</div>
-        </div>
-        <div class="target-card">
-            <div class="card-icon">🔄</div>
-            <div class="card-title">{t["svc_renewals"]}</div>
-            <div class="card-subtext">Emirates ID, Fine Clearance</div>
-        </div>
-        <div class="target-card {'active-card' if current_filter == 'All' else ''}">
-            <div class="card-icon">❓</div>
-            <div class="card-title">{t["svc_faq"]}</div>
-            <div class="card-subtext">Check the full library</div>
-        </div>
-    </div>
-    """)
+    
 
     # ─────────────────────────────────────────────
     # CHAT + SIDEBAR PANEL
