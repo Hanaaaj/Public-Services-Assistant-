@@ -73,23 +73,35 @@ def show_welcome_screen():
         min-height: 80px;
     }
 
-    /* ── TARGET THE WELCOME BUTTON DIRECTLY ── */
+    /* ── ULTIMATE PRIORITY TARGETING FOR THE BUTTON ── */
+    /* Forces background container styling */
+    div.stButton > button[data-testid="baseButton-secondary"],
     div.stButton > button {
-        background-color: #FBBF24 !important; /* Premium Amber Gold */
-        color: #022C22 !important;            /* Contrast deep green text */
-        font-weight: 700 !important;          
-        border-radius: 12px !important;       /* Clean sleek corners */
+        background-color: #FBBF24 !important; 
+        border-radius: 12px !important;       
         border: none !important;              
         height: 50px !important;              
-        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3) !important; /* Colorful soft glow */
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4) !important; 
         transition: all 0.2s ease-in-out !important;
     }
 
-    /* Hover effect styling */
+    /* Forces text styling inside the button label elements */
+    div.stButton > button p,
+    div.stButton > button span,
+    div.stButton > button div {
+        color: #022C22 !important;            
+        font-weight: 700 !important;
+        font-size: 16px !important;
+    }
+
+    /* Hover updates */
     div.stButton > button:hover {
-        background-color: #F59E0B !important; /* Slightly richer gold on hover */
-        color: #022C22 !important;
+        background-color: #F59E0B !important; 
         transform: translateY(-1px) !important;
+    }
+    
+    div.stButton > button:hover p {
+        color: #022C22 !important;
     }
 
     @keyframes fadeIn {
