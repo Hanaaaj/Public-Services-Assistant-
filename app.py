@@ -60,6 +60,27 @@ div[data-testid="column"]:last-child .stButton button {
     box-shadow: none !important;
     background: none !important;
 }
+
+/* Turn the native Streamlit button into the beautiful green Hero button */
+.hero-chat-btn button {
+    background-color: #10B981 !important;
+    color: #042F22 !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    padding: 12px 24px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s, transform 0.1s !important;
+}
+.hero-chat-btn button:hover {
+    background-color: #059669 !important;
+    color: #042F22 !important;
+}
+.hero-chat-btn button:active {
+    transform: scale(0.98) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 #---------------
@@ -296,20 +317,7 @@ else:
     .hero-btn-group {
         display: flex;
         gap: 16px;
-    }
-    .btn-dynamic-chat {
-        background-color: #10B981;
-        color: #042F22 !important;
-        font-weight: 700;
-        font-size: 14px;
-        padding: 12px 24px;
-        border-radius: 12px;
-        text-decoration: none !important;
-        display: inline-flex;
         align-items: center;
-        gap: 8px;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-        border: none;
     }
     .btn-browse-library {
         background: rgba(255, 255, 255, 0.05);
@@ -472,22 +480,10 @@ else:
             st.markdown("</div>", unsafe_allow_html=True)
 
     # ─────────────────────────────────────────────
-    # PARSE ACTION & LANGUAGE HOOKS
+    # HERO BANNER LAYOUT (Separated content & native button)
     # ─────────────────────────────────────────────
-    url_params = st.query_params
-
-    if "filter" in url_params:
-        requested_filter = url_params.get("filter")
-        if requested_filter in ["All", "Visa Services", "Driving License", "Business License"]:
-            st.session_state.selected_library_filter = requested_filter
-        st.query_params.clear()
-        st.rerun()
-
-    # ─────────────────────────────────────────────
-    # HERO BANNER LAYOUT
-    # ─────────────────────────────────────────────
-    # The 'Start Dynamic Chat' button now uses #chat-anchor to jump directly down to the chat panel without page reloads
-    hero_raw_html = f"""
+    # Render the background slides and left text inside a layout shell
+    st.html(f"""
     <div class="hero-wrapper">
         <div class="hero-slideshow">
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1579930700019-f5f6ba3db867?q=80&w=1176');"></div>
@@ -503,15 +499,28 @@ else:
                 <div class="hero-description">
                     Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations. Handled via fully private server-side retrieval and secure grounded AI.
                 </div>
-                <div class="hero-btn-group">
-                    <a href="#chat-anchor" class="btn-dynamic-chat">Start Dynamic Chat &nbsp;➔</a>
-                    <a href="#verified-library" class="btn-browse-library">Browse Verification Library</a>
+                <div class="hero-btn-group" id="hero-actions-box">
+    """)
+
+    # Render button choices directly in an inline block row inside the hero wrapper
+    btn_col1, btn_col2, _ = st.columns([1.6, 2, 5])
+    with btn_col1:
+        st.markdown("<div class='hero-chat-btn'>", unsafe_allow_html=True)
+        if st.button("Start Dynamic Chat ➔", key="hero_chat_trigger"):
+            # Quietly script-scroll to the conversation block without risking raw routing variables reset
+            st.html("<script>window.location.hash = '#chat-anchor';</script>")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+    with btn_col2:
+        st.markdown(f'<a href="#verified-library" class="btn-browse-library" style="margin-top:4px;">Browse Verification Library</a>', unsafe_allow_html=True)
+
+    # Close out the remaining structural HTML tags cleanly
+    st.html("""
                 </div>
             </div>
         </div>
     </div>
-    """
-    st.html(hero_raw_html)
+    """)
      
     # ─────────────────────────────────────────────
     # SPLIT CHAT INTERFACE WINDOW
@@ -527,8 +536,8 @@ else:
             "sources": [],
         })
 
-    # Added HTML Anchor Point to pull down the frame layout contextually on user call requests
-    st.html('<div id="chat-anchor"></div>')
+    # Dedicated wrapper token to intercept focus calls instantly
+    st.html('<div id="chat-anchor" style="padding-top:20px;"></div>')
     chat_col, sidebar_col = st.columns([2, 1])
 
     with chat_col:
