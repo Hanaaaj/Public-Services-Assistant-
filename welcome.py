@@ -41,8 +41,8 @@ def show_welcome_screen():
     }
 
     .logo {
-        width: 320px;
-        height: 320px;
+        width: 520px;
+        height: 520px;
         object-fit: contain;
         background-color: #FFFFFF;
         border-radius: 50%;
