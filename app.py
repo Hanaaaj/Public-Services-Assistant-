@@ -18,12 +18,6 @@ from agent import (
 )
 
 from welcome import show_welcome_screen
-url_params = st.query_params
-if url_params.get("action") == "start_chat":
-    st.session_state.started = True
-if "started" not in st.session_state or not st.session_state.started:
-    show_welcome_screen()
-    st.stop()
 
 # ─────────────────────────────────────────────
 # PAGE CONFIG
@@ -444,14 +438,15 @@ else:
     if api_key_input and "chat_session" not in st.session_state:
         model = get_gemini_model(api_key_input)
         st.session_state.chat_session = start_chat_session(model)
-    st.html('<div id="chat-section-target" style="margin-top: -20px;"></div>')
-   if not st.session_state.messages:
-    st.session_state.messages.append({
+
+    if not st.session_state.messages:
+        st.session_state.messages.append({
             "role": "assistant",
             "content": t["greeting"],
             "sources": [],
         })
-   chat_col, sidebar_col = st.columns([2, 1])
+
+    chat_col, sidebar_col = st.columns([2, 1])
 
     with chat_col:
         for msg in st.session_state.messages:
