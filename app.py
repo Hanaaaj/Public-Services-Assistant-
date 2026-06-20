@@ -409,8 +409,7 @@ else:
     </style>
     """)
 
-
-   if is_arabic:
+if is_arabic:
     st.html("""
     <style>
     html, body, [class*="css"], .stApp { 
