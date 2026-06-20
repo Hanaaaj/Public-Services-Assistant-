@@ -423,7 +423,18 @@ else:
         </style>
         """)
 
+    # ─────────────────────────────────────────────
+    # CONFIGURATION/SIDEBAR ACCESS (UI elements removed)
+    # ─────────────────────────────────────────────
+    # Fetch key to ensure backend pipeline runs continuously
+    api_key_input = get_rotated_api_key()
+    if len(API_KEYS_POOL) == 0 and not api_key_input:
+        # Fallback in case no server-side keys exist to allow manual testing
+        with st.sidebar:
+            api_key_input = st.text_input(t["api_label"], type="password", help=t["api_help"])
 
+
+     
     # ─────────────────────────────────────────────
     # UNIFIED NAV BAR
     # ─────────────────────────────────────────────
