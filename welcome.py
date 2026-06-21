@@ -1,70 +1,147 @@
 # welcome.py
+
 import streamlit as st
+
 import time
+
 import base64
 
+
+
 def show_welcome_screen():
+
     st.markdown("""
+
     <style>
+
     .stApp 
+
         background: linear-gradient(
-        135deg,
-        #022C22 0%,
-        #0A5C44 40%,
-        #15803D 70%,
-        #022C22 100%
+
+            135deg,
+
+            #022C22 0%,
+
+            #0A5C44 40%,
+
+            #15803D 70%,
+
+            #022C22 100%
+
         );
+
     }
-.main-container {
+
+
+
+    .main-container {
+
         display: flex;
+
         justify-content: center;
+
         align-items: center;
+
         min-height: 85vh;
+
         padding: 20px;
+
     }
-.glass-card {
+
+
+
+    .glass-card {
+
         width: 900px;
+
         padding: 40px;
+
         text-align: center;
+
         background: rgba(255, 255, 255, 0.08);
+
         backdrop-filter: blur(15px);
+
         -webkit-backdrop-filter: blur(15px);
+
         border-radius: 25px;
+
         border: 1px solid rgba(255, 255, 255, 0.2);
+
         animation: fadeIn 1.5s ease-in-out;
+
     }
-.glass-card h1, .glass-card p, .glass-card div {
+
+
+
+    .glass-card h1, .glass-card p, .glass-card div {
+
         color: #FFFFFF !important;
+
     }
+
+
 
     .logo {
+
         width: 220px;
+
         height: 220px;
+
         object-fit: contain;
+
         background-color: #FFFFFF;
+
         border-radius: 50%;
+
         border: 3px solid rgba(255, 255, 255, 0.9);
+
         margin: 0 auto 20px auto;
+
         display: block;
+
         padding: 15px;
+
         animation: logoFloat 2s ease-in-out;
-    }
-.typed-title {
-        color: white;
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-top: 10px;
-        margin-bottom: 20px;
-        min-height: 80px;
-    }
-@keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0px); }
+
     }
 
+
+
+    .typed-title {
+
+        color: white;
+
+        font-size: 2.5rem;
+
+        font-weight: 700;
+
+        margin-top: 10px;
+
+        margin-bottom: 20px;
+
+        min-height: 80px;
+
+    }
+
+
+
+    @keyframes fadeIn {
+
+        from { opacity: 0; transform: translateY(20px); }
+
+        to { opacity: 1; transform: translateY(0px); }
+
+    }
+
+
+
     @keyframes logoFloat {
+
         0% { opacity: 0; transform: translateY(-20px); }
+
         100% { opacity: 1; transform: translateY(0px); }
+
     }
 
     </style>
