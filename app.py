@@ -47,6 +47,9 @@ if "messages" not in st.session_state:
 if "scroll_to_chat" not in st.session_state:
     st.session_state.scroll_to_chat = False
  
+if "scroll_to_hero" not in st.session_state:
+    st.session_state.scroll_to_hero = False
+ 
 API_KEYS_POOL = []
  
 # ─────────────────────────────────────────────
@@ -413,6 +416,8 @@ else:
     # ─────────────────────────────────────────────
     # HERO BANNER — SLIDESHOW
     # ─────────────────────────────────────────────
+    st.html('<div id="daleel-hero-anchor"></div>')
+ 
     hero_title    = "المدعوم بالذكاء الاصطناعي<br> مساعد الخدمات العامة" if is_arabic else "Public Service<br><span>AI Services Assistant</span>"
     hero_desc     = "احصل على إرشادات فورية وموثوقة حول التأشيرات وقواعد الإقامة وتحويل رخص القيادة والشركات." if is_arabic else "Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations."
     hero_btn1     = "ابدأ المحادثة" if is_arabic else "Start Dynamic Chat"
@@ -434,6 +439,28 @@ else:
         </div>
     </div>
     """)
+ 
+    # ─────────────────────────────────────────────
+    # SCROLL TO HERO  (fires once, right after
+    # "Get Started" is clicked on the welcome screen)
+    # ─────────────────────────────────────────────
+    if st.session_state.get("scroll_to_hero"):
+        st.session_state.scroll_to_hero = False
+        st.html("""
+        <script>
+        (function() {
+            function doScroll() {
+                const el = window.parent.document.getElementById('daleel-hero-anchor');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    setTimeout(doScroll, 100);
+                }
+            }
+            doScroll();
+        })();
+        </script>
+        """)
  
     # ─────────────────────────────────────────────
     # HERO CTA BUTTONS  (real Streamlit buttons —
