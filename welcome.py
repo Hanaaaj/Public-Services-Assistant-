@@ -2,7 +2,7 @@
 import streamlit as st
 import time
 import base64
-
+ 
 def show_welcome_screen():
     st.markdown("""
     <style>
@@ -15,7 +15,7 @@ def show_welcome_screen():
             #022C22 100%
         );
     }
-
+ 
     .main-container {
         display: flex;
         justify-content: center;
@@ -23,7 +23,7 @@ def show_welcome_screen():
         min-height: 85vh;
         padding: 20px;
     }
-
+ 
     .glass-card {
         width: 900px;
         padding: 40px;
@@ -35,11 +35,11 @@ def show_welcome_screen():
         border: 1px solid rgba(255, 255, 255, 0.2);
         animation: fadeIn 1.5s ease-in-out;
     }
-
+ 
     .glass-card h1, .glass-card p, .glass-card div {
         color: #FFFFFF !important;
     }
-
+ 
     .logo {
         width: 220px;
         height: 220px;
@@ -52,7 +52,7 @@ def show_welcome_screen():
         padding: 15px;
         animation: logoFloat 2s ease-in-out;
     }
-
+ 
     .typed-title {
         color: white;
         font-size: 2.5rem;
@@ -61,19 +61,19 @@ def show_welcome_screen():
         margin-bottom: 20px;
         min-height: 80px;
     }
-
+ 
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0px); }
     }
-
+ 
     @keyframes logoFloat {
         0% { opacity: 0; transform: translateY(-20px); }
         100% { opacity: 1; transform: translateY(0px); }
     }
     </style>
     """, unsafe_allow_html=True)
-
+ 
     try:
         with open("LOGO1.png", "rb") as f:
             data = f.read()
@@ -81,11 +81,11 @@ def show_welcome_screen():
         image_src = f"data:image/png;base64,{encoded_image}"
     except FileNotFoundError:
         image_src = "LOGO1.png"
-
+ 
     container_placeholder = st.empty()
     title = "Welcome to Daleel — دليل "
     typed = ""
-
+ 
     if "animation_done" not in st.session_state:
         for char in title:
             typed += char
@@ -132,12 +132,14 @@ def show_welcome_screen():
             """,
             unsafe_allow_html=True
         )
-
+ 
     st.write("")
     col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
         if st.button(" Get Started", use_container_width=True):
             st.session_state.started = True
+            # Flag a one-time scroll-to-hero, consumed in app.py right
+            # after the hero section renders on the next run.
+            st.session_state.scroll_to_hero = True
             st.rerun()
-
-
+ 
