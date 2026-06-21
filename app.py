@@ -399,6 +399,7 @@ else:
                 "content": t["greeting"],
                 "sources": []
             })
+        st.session_state.scroll_to_chat = True
         st.rerun()
 
     # ─────────────────────────────────────────────
@@ -445,6 +446,7 @@ else:
             "content": t["greeting"],
             "sources": [],
         })
+    st.html('<div id="daleel-chat-anchor"></div>')
 
     chat_col, sidebar_col = st.columns([2, 1])
 
@@ -489,6 +491,29 @@ else:
             <a href="https://rta.ae"         target="_blank" class="hub-link-item"><span>{"هيئة الطرق والمواصلات" if is_arabic else "RTA Traffic Portal"}</span><span>↗</span></a>
             <a href="https://mohre.gov.ae"   target="_blank" class="hub-link-item"><span>{"وزارة الموارد البشرية" if is_arabic else "MOHRE Labour Agency"}</span><span>↗</span></a>
         </div>
+        """)
+     # ─────────────────────────────────────────────
+    # SCROLL TO CHAT  (fires once, right after the
+    # "Start Dynamic Chat" button sets the flag, then
+    # consumes the flag so it doesn't re-fire on every
+    # later rerun while the user is just chatting)
+    # ─────────────────────────────────────────────
+    if st.session_state.get("scroll_to_chat"):
+        st.session_state.scroll_to_chat = False
+        st.html("""
+        <script>
+        (function() {
+            function doScroll() {
+                const el = window.parent.document.getElementById('daleel-chat-anchor');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    setTimeout(doScroll, 100);
+                }
+            }
+            doScroll();
+        })();
+        </script>
         """)
 
     # ─────────────────────────────────────────────
