@@ -75,12 +75,12 @@ def show_welcome_screen():
     """, unsafe_allow_html=True)
 
     try:
-        with open("LOGO.jpeg", "rb") as f:
+        with open("LOGO1.png", "rb") as f:
             data = f.read()
             encoded_image = base64.b64encode(data).decode()
-        image_src = f"data:image/jpeg;base64,{encoded_image}"
+        image_src = f"data:image/png;base64,{encoded_image}"
     except FileNotFoundError:
-        image_src = "LOGO.jpeg"
+        image_src = "LOGO1.png"
 
     container_placeholder = st.empty()
     title = "Welcome to Daleel — دليل "
@@ -139,3 +139,5 @@ def show_welcome_screen():
         if st.button(" Get Started", use_container_width=True):
             st.session_state.started = True
             st.rerun()
+
+
