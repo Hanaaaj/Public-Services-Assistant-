@@ -1,7 +1,7 @@
 """
 app.py — Public Service AI Assistant
 Pure Streamlit UI custom-tailored to a pixel-perfect design system with
-integrated HTML5/JS audio input recording and native multimodal audio playback.
+an explicit HTML5 web-audio recording button for voice input and native audio playback.
 """
 import base64
 import streamlit as st
@@ -133,14 +133,6 @@ else:
     .side-disclaimer-text { font-size: 13px; color: #9A3412; line-height: 1.5; }
 
     .brand-block { display: flex; align-items: center; gap: 12px; }
-    .brand-badge {
-        background-color: #0F5A41;
-        color: white;
-        font-weight: 700;
-        font-size: 16px;
-        padding: 8px 12px;
-        border-radius: 12px;
-    }
     .brand-name { font-size: 20px; font-weight: 700; color: #111827; line-height: 1.1; }
     .brand-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6B7280; }
 
@@ -155,7 +147,6 @@ else:
         direction: ltr !important;
     }
 
-    /* ── SLIDESHOW ENGINE ── */
     .hero-slideshow {
         position: absolute;
         width: 300%;
@@ -216,7 +207,6 @@ else:
         color: #E2FBF0;
         margin-bottom: 32px;
     }
-    .hero-btn-group { display: flex; gap: 16px; }
     .btn-browse-library {
         background: rgba(255,255,255,0.05);
         border: 1px solid rgba(255,255,255,0.2);
@@ -264,27 +254,28 @@ else:
     .custom-table td { padding: 20px 18px; border-bottom: 1px solid #E2E8F0; vertical-align: top; }
     .table-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 
-    /* ── AUDIO PANEL MODULE ── */
-    .voice-control-container {
+    /* ── CUSTOM VOICE INTERFACE ── */
+    .voice-card-panel {
         background-color: #F8FAFC;
-        border: 1px dashed #CBD5E1;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 15px;
+        border: 1px dashed #0F5A41;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .voice-panel-header {
+        font-size: 14px;
+        font-weight: 700;
+        color: #042F22;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
+        gap: 8px;
     }
-    .voice-label { font-size: 13px; font-weight: 600; color: #334155; }
-
+    
     .custom-footer-bar { padding: 20px; text-align: center; color: #6B7280; font-size: 12px; margin-top: 40px; }
     </style>
     """)
 
-    # ─────────────────────────────────────────────
-    # ARABIC RTL CSS
-    # ─────────────────────────────────────────────
     if is_arabic:
         st.html("""
         <style>
@@ -298,7 +289,6 @@ else:
         .hub-link-item { flex-direction: row-reverse; }
         .side-disclaimer { flex-direction: row-reverse; }
         .hero-btn-group { flex-direction: row-reverse; }
-        .voice-control-container { flex-direction: row-reverse; }
 
         .hero-wrapper   { direction: ltr !important; }
         .hero-slideshow { direction: ltr !important; }
@@ -392,12 +382,12 @@ else:
     chat_col, sidebar_col = st.columns([2, 1])
 
     with chat_col:
-        # Display the streaming multi-turn chat records
+        # 1. Render all turns in the chat console
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
                 
-                # If the assistant spoke, provide the optional voice playback controls
+                # Dynamic audio response playback element
                 if msg.get("audio_bytes") and msg["role"] == "assistant":
                     st.audio(msg["audio_bytes"], format="audio/mp3")
 
@@ -410,50 +400,59 @@ else:
                             unsafe_allow_html=True,
                         )
 
-        # Voice Input Interface Box
+        # 2. Dedicated Voice Recording System Button Panel
         st.markdown("<br>", unsafe_allow_html=True)
-        st.html(f"""
-        <div class="voice-control-container">
-            <span class="voice-label">🎤 {"التحدث إلى دليل بدلاً من الكتابة" if is_arabic else "Speak to Daleel instead of typing:"}</span>
-        </div>
-        """)
         
-        # Native input browser wrapper for recording vocal inputs
-        voice_audio = st.audio_input(label="Voice Microphone Input Recorder", label_visibility="collapsed", key="voice_microphone")
+        panel_headline = "🎤 تفعيل المدخلات الصوتية" if is_arabic else "🎤 Hands-Free Voice Control Hub"
+        panel_desc = "اضغط على زر التسجيل للتحدث مباشرة بدلاً من الكتابة لوحة المفاتيح:" if is_arabic else "Click record below to talk to your service companion directly instead of typing:"
         
-        processed_input = None
+        with st.container():
+            st.markdown(f"""
+            <div class="voice-card-panel">
+                <div class="voice-panel-header">{panel_headline}</div>
+                <p style="font-size:13px; color:#4B5563; margin-bottom:12px;">{panel_desc}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Using st.audio_input with clear backup configuration to avoid rendering bugs
+            recorded_voice_file = st.audio_input(
+                label="Voice Command Mic Controller", 
+                label_visibility="collapsed", 
+                key="voice_audio_recorder_widget"
+            )
+
+        # 3. Handle Voice Processing & Text Fallback Pipeline
+        unified_input = None
         
-        if voice_audio is not None:
-            raw_audio_bytes = voice_audio.read()
-            if raw_audio_bytes:
+        if recorded_voice_file is not None:
+            raw_voice_bytes = recorded_voice_file.read()
+            if raw_voice_bytes:
                 with st.spinner("🎙️ " + ("جاري معالجة الصوت..." if is_arabic else "Transcribing voice narration...")):
-                    transcribed_text = transcribe_audio_bytes(raw_audio_bytes, api_key_input)
+                    transcribed_text = transcribe_audio_bytes(raw_voice_bytes, api_key_input)
                     if transcribed_text and not transcribed_text.startswith("Transcription error:"):
-                        processed_input = transcribed_text
+                        unified_input = transcribed_text
 
-        # Text input fallback fallback
-        user_text_input = st.chat_input(t["placeholder"])
-        if user_text_input:
-            processed_input = user_text_input
+        text_input_value = st.chat_input(t["placeholder"])
+        if text_input_value:
+            unified_input = text_input_value
 
-        # Unified execution block for text or voice submissions
-        if processed_input:
+        if unified_input:
             if not api_key_input:
                 st.warning(t["api_info"])
             else:
-                st.session_state.messages.append({"role": "user", "content": processed_input, "sources": []})
-                matched_docs, context_string = retrieve_context(processed_input, vectorizer, tfidf_matrix, kb_data)
+                st.session_state.messages.append({"role": "user", "content": unified_input, "sources": []})
+                matched_docs, context_string = retrieve_context(unified_input, vectorizer, tfidf_matrix, kb_data)
                 
                 with st.spinner(t["thinking"]):
-                    reply = generate_grounded_response(processed_input, context_string, st.session_state.session_state.get("chat_session") if "chat_session" in st.session_state else st.session_state.chat_session, lang=st.session_state.lang)
-                    # Convert generated text into spoken audio output
-                    out_audio = generate_speech_bytes(reply, api_key_input)
+                    reply = generate_grounded_response(unified_input, context_string, st.session_state.chat_session, lang=st.session_state.lang)
+                    # Convert response text into rich vocal audio waves
+                    vocal_response_audio = generate_speech_bytes(reply, api_key_input)
                     
                 st.session_state.messages.append({
                     "role": "assistant", 
                     "content": reply, 
                     "sources": matched_docs,
-                    "audio_bytes": out_audio if out_audio else None
+                    "audio_bytes": vocal_response_audio if vocal_response_audio else None
                 })
                 st.rerun()
 
