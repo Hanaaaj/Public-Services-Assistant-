@@ -1,7 +1,6 @@
 """
 app.py — Public Service AI Assistant
-Pure Streamlit UI custom-tailored to a pixel-perfect design system with
-cross-version compatible audio input and native audio playback.
+Pure Streamlit UI custom-tailored to a pixel-perfect design system.
 """
 import base64
 import streamlit as st
@@ -16,8 +15,6 @@ from agent import (
     get_gemini_model,
     start_chat_session,
     generate_grounded_response,
-    transcribe_audio_bytes,
-    generate_speech_bytes,
 )
 
 from welcome import show_welcome_screen
@@ -26,7 +23,7 @@ from welcome import show_welcome_screen
 # PAGE CONFIG
 # ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="Public Service AI Assistant",
+    page_title=" Public Service AI Assistant",
     page_icon="🇦🇪",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -93,7 +90,7 @@ else:
     # ─────────────────────────────────────────────
     # BASE CSS
     # ─────────────────────────────────────────────
-    st.markdown("""
+    st.html("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;600;700;800&display=swap');
 
@@ -114,6 +111,13 @@ else:
         max-width: 100% !important;
     }
 
+    /* Toggle button fixed width */
+    div[data-testid="column"]:last-child .stButton button {
+        width: 90px !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+    }
+
     .side-disclaimer {
         background-color: #FFF6ED;
         border: 1px solid #FFEDD5;
@@ -127,8 +131,18 @@ else:
     .side-disclaimer-text { font-size: 13px; color: #9A3412; line-height: 1.5; }
 
     .brand-block { display: flex; align-items: center; gap: 12px; }
+    .brand-badge {
+        background-color: #0F5A41;
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        padding: 8px 12px;
+        border-radius: 12px;
+    }
     .brand-name { font-size: 20px; font-weight: 700; color: #111827; line-height: 1.1; }
     .brand-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6B7280; }
+    .custom-nav-links { display: flex; gap: 24px; font-size: 14.5px; font-weight: 500; color: #4B5563; }
+    .custom-nav-links a { text-decoration: none !important; color: inherit !important; }
 
     /* ── HERO WRAPPER ── */
     .hero-wrapper {
@@ -141,13 +155,16 @@ else:
         direction: ltr !important;
     }
 
+    /* ── SLIDESHOW ENGINE ── */
     .hero-slideshow {
         position: absolute;
         width: 300%;
         height: 100%;
         display: flex;
         direction: ltr !important;
+        unicode-bidi: isolate !important;
         animation: heroSlider 15s infinite ease-in-out;
+        animation-direction: normal !important;
     }
 
     .hero-slide {
@@ -156,6 +173,8 @@ else:
         background-size: cover;
         background-position: center;
         flex-shrink: 0;
+        direction: ltr !important;
+        unicode-bidi: isolate !important;
     }
 
     @keyframes heroSlider {
@@ -165,6 +184,7 @@ else:
         100%      { transform: translateX(0%); }
     }
 
+    /* ── HERO OVERLAY ── */
     .hero-overlay {
         position: absolute;
         inset: 0;
@@ -172,6 +192,7 @@ else:
         z-index: 2;
     }
 
+    /* ── HERO TEXT CONTENT ── */
     .hero-content-container {
         position: absolute;
         inset: 0;
@@ -201,6 +222,20 @@ else:
         color: #E2FBF0;
         margin-bottom: 32px;
     }
+    .hero-btn-group { display: flex; gap: 16px; }
+    .btn-dynamic-chat {
+        background-color: #10B981;
+        color: #042F22 !important;
+        font-weight: 700;
+        font-size: 14px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(16,185,129,0.2);
+    }
     .btn-browse-library {
         background: rgba(255,255,255,0.05);
         border: 1px solid rgba(255,255,255,0.2);
@@ -213,6 +248,23 @@ else:
         display: inline-flex;
         align-items: center;
     }
+
+    /* ── SERVICE CARDS ── */
+    .cards-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+        margin-bottom: 35px;
+    }
+    .target-card {
+        background: white;
+        border: 1px solid #E5E7EB;
+        border-radius: 16px;
+        padding: 20px 16px;
+    }
+    .target-card .card-icon { font-size: 24px; margin-bottom: 12px; }
+    .target-card .card-title { font-size: 15px; font-weight: 700; color: #111827; }
+    .target-card .card-subtext { font-size: 12px; color: #6B7280; }
 
     /* ── SIDE PANEL ── */
     .side-panel {
@@ -248,60 +300,51 @@ else:
     .custom-table td { padding: 20px 18px; border-bottom: 1px solid #E2E8F0; vertical-align: top; }
     .table-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 
-    /* ── COMPATIBLE VOICE INTERFACE PANEL ── */
-    .voice-interactive-box {
-        background-color: #F0FDF4;
-        border: 2px dashed #16A34A;
-        border-radius: 16px;
-        padding: 18px;
-        margin-top: 15px;
-        margin-bottom: 15px;
-    }
-    .voice-box-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: #14532D;
-        margin-bottom: 6px;
-    }
-    .voice-box-desc {
-        font-size: 13px;
-        color: #166534;
-        margin-bottom: 12px;
-    }
-
     .custom-footer-bar { padding: 20px; text-align: center; color: #6B7280; font-size: 12px; margin-top: 40px; }
     </style>
-    """, unsafe_allow_html=True)
+    """)
 
+    # ─────────────────────────────────────────────
+    # ARABIC RTL CSS  (only added when Arabic)
+    # ─────────────────────────────────────────────
     if is_arabic:
-        st.markdown("""
+        st.html("""
         <style>
         html, body, [class*="css"], .stApp {
             font-family: 'Cairo', sans-serif !important;
             direction: rtl;
             text-align: right;
         }
+        .custom-header, .library-header-row { flex-direction: row-reverse; }
         .custom-table { text-align: right; }
         .custom-table th { text-align: right; }
         .hub-link-item { flex-direction: row-reverse; }
         .side-disclaimer { flex-direction: row-reverse; }
         .hero-btn-group { flex-direction: row-reverse; }
 
-        .hero-wrapper   { direction: ltr !important; }
-        .hero-slideshow { direction: ltr !important; }
-        .hero-slide     { direction: ltr !important; }
+        /* Slideshow: fully isolated from RTL */
+        .hero-wrapper   { direction: ltr !important; unicode-bidi: isolate !important; }
+        .hero-slideshow { direction: ltr !important; unicode-bidi: isolate !important; animation-direction: normal !important; }
+        .hero-slide     { direction: ltr !important; unicode-bidi: isolate !important; }
 
+        /* Flip overlay gradient for Arabic (dark on right side) */
         .hero-overlay {
-            background: linear-gradient(to left, rgba(4,47,34,0.95) 40%, rgba(4,47,34,0.5) 70%, rgba(4,47,34,0.2) 100%) !important;
+            background: linear-gradient(
+                to left,
+                rgba(4,47,34,0.95) 40%,
+                rgba(4,47,34,0.5)  70%,
+                rgba(4,47,34,0.2)  100%
+            ) !important;
         }
 
+        /* Flip text to right side */
         .hero-content-container { direction: rtl !important; justify-content: flex-end !important; }
         .hero-left-content      { align-items: flex-end !important; text-align: right !important; }
         </style>
-        """, unsafe_allow_html=True)
+        """)
 
     # ─────────────────────────────────────────────
-    # API KEY SETUP
+    # API KEY
     # ─────────────────────────────────────────────
     api_key_input = get_rotated_api_key()
     if len(API_KEYS_POOL) == 0 and not api_key_input:
@@ -323,25 +366,50 @@ else:
         st.markdown("</div>", unsafe_allow_html=True)
 
     with nav_col:
-        st.markdown(f"""
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:65px 0 15px 0; margin-bottom:20px;">
-            <div class="brand-block">
+        st.html(f"""
+        <div style="display:flex; justify-content:space-between; align-items:center;
+                    padding:65px 0 15px 0; margin-bottom:20px;">
+            <div class="brand-block" style="display:flex; align-items:center; gap:12px;">
+                
                 <div>
                     <div class="brand-name">{t["nav_logo"]}</div>
                     <div class="brand-tag">Prototype Agent</div>
                 </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            
+        """)
+
+    # ─────────────────────────────────────────────
+    # QUERY PARAM HOOKS
+    # ─────────────────────────────────────────────
+    url_params = st.query_params
+
+    if "filter" in url_params:
+        requested_filter = url_params.get("filter")
+        if requested_filter in ["All", "Visa Services", "Driving License", "Business License"]:
+            st.session_state.selected_library_filter = requested_filter
+        st.query_params.clear()
+        st.rerun()
+
+    if url_params.get("action") == "start_chat":
+        st.query_params.clear()
+        if len(st.session_state.messages) <= 1:
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": t["greeting"],
+                "sources": []
+            })
+        st.rerun()
 
     # ─────────────────────────────────────────────
     # HERO BANNER — SLIDESHOW
     # ─────────────────────────────────────────────
     hero_title    = "المدعوم بالذكاء الاصطناعي<br> مساعد الخدمات العامة" if is_arabic else "Public Service<br><span>AI Services Assistant</span>"
     hero_desc     = "احصل على إرشادات فورية وموثوقة حول التأشيرات وقواعد الإقامة وتحويل رخص القيادة والشركات." if is_arabic else "Get instant, reliable guidance on visas, residency rules, driving conversions, step checklists, and company registrations."
+    hero_btn1     = "ابدأ المحادثة ←" if is_arabic else "Start Dynamic Chat &nbsp;➔"
     hero_btn2     = "تصفح المكتبة" if is_arabic else "Browse Verification Library"
 
-    st.markdown(f"""
+    st.html(f"""
     <div class="hero-wrapper">
         <div class="hero-slideshow">
             <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1579930700019-f5f6ba3db867?q=80&w=1176');"></div>
@@ -354,15 +422,18 @@ else:
                 <div class="hero-main-title">{hero_title}</div>
                 <div class="hero-description">{hero_desc}</div>
                 <div class="hero-btn-group">
+                  
                     <a href="#verified-library" class="btn-browse-library">{hero_btn2}</a>
                 </div>
             </div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
+
+    
 
     # ─────────────────────────────────────────────
-    # CHAT RUNTIME INITIALIZATION
+    # CHAT + SIDEBAR PANEL
     # ─────────────────────────────────────────────
     if api_key_input and "chat_session" not in st.session_state:
         model = get_gemini_model(api_key_input)
@@ -373,21 +444,14 @@ else:
             "role": "assistant",
             "content": t["greeting"],
             "sources": [],
-            "audio_bytes": None
         })
 
     chat_col, sidebar_col = st.columns([2, 1])
 
     with chat_col:
-        # 1. Render all turns in the chat console
         for msg in st.session_state.messages:
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
-                
-                # Dynamic vocal playback control row
-                if msg.get("audio_bytes") and msg["role"] == "assistant":
-                    st.audio(msg["audio_bytes"], format="audio/mp3")
-
                 if msg.get("sources") and msg["role"] == "assistant":
                     st.markdown(t["verify_source"])
                     for src in msg["sources"]:
@@ -397,85 +461,20 @@ else:
                             unsafe_allow_html=True,
                         )
 
-        # 2. Universal Version Audio Input Interface Box
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        v_title = "🎙️ لوحة التحكم الصوتي المباشر" if is_arabic else "🎙️ Interactive Voice Control Center"
-        v_desc = "اختر طريقة إدخال الصوت المفضلة لديك للتحدث مباشرة إلى النظام:" if is_arabic else "Select your preferred voice input method below to interact with the system:"
-        
-        st.markdown(f"""
-        <div class="voice-interactive-box">
-            <div class="voice-box-title">{v_title}</div>
-            <div class="voice-box-desc">{v_desc}</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Explicit input mode option selector to guarantee visibility
-        input_mode = st.radio(
-            label="Input Method Selector",
-            options=["Text Input Only", "Live Microphone (st.audio_input)", "Upload Audio File Fallback"],
-            index=0,
-            horizontal=True,
-            key="explicit_input_mode_selector"
-        )
-
-        recorded_voice_file = None
-
-        if input_mode == "Live Microphone (st.audio_input)":
-            try:
-                recorded_voice_file = st.audio_input(
-                    label="Voice Recorder", 
-                    label_visibility="collapsed", 
-                    key="primary_voice_mic_device"
-                )
-            except Exception as e:
-                st.error(f"Live microphone initialization failed: {e}. Please switch to 'Upload Audio File Fallback'.")
-
-        elif input_mode == "Upload Audio File Fallback":
-            recorded_voice_file = st.file_uploader(
-                label="🎙️ Manual Audio Upload (.mp3 / .wav / .m4a)", 
-                type=["mp3", "wav", "m4a", "ogg", "oga"],
-                key="backup_audio_file_uploader"
-            )
-
-        # 3. Handle Inputs Transition & Execution Chain
-        unified_input = None
-        
-        if recorded_voice_file is not None:
-            raw_voice_bytes = recorded_voice_file.read()
-            if raw_voice_bytes:
-                with st.spinner("🎙️ " + ("جاري معالجة الصوت..." if is_arabic else "Transcribing voice narration...")):
-                    transcribed_text = transcribe_audio_bytes(raw_voice_bytes, api_key_input)
-                    if transcribed_text and not transcribed_text.startswith("Transcription error:"):
-                        unified_input = transcribed_text
-
-        text_input_value = st.chat_input(t["placeholder"])
-        if text_input_value:
-            unified_input = text_input_value
-
-        if unified_input:
+        if user_input := st.chat_input(t["placeholder"]):
             if not api_key_input:
                 st.warning(t["api_info"])
             else:
-                st.session_state.messages.append({"role": "user", "content": unified_input, "sources": []})
-                matched_docs, context_string = retrieve_context(unified_input, vectorizer, tfidf_matrix, kb_data)
-                
+                st.session_state.messages.append({"role": "user", "content": user_input, "sources": []})
+                matched_docs, context_string = retrieve_context(user_input, vectorizer, tfidf_matrix, kb_data)
                 with st.spinner(t["thinking"]):
-                    reply = generate_grounded_response(unified_input, context_string, st.session_state.chat_session, lang=st.session_state.lang)
-                    # Convert response text into rich vocal audio waves
-                    vocal_response_audio = generate_speech_bytes(reply, api_key_input)
-                    
-                st.session_state.messages.append({
-                    "role": "assistant", 
-                    "content": reply, 
-                    "sources": matched_docs,
-                    "audio_bytes": vocal_response_audio if vocal_response_audio else None
-                })
+                    reply = generate_grounded_response(user_input, context_string, st.session_state.chat_session, lang=st.session_state.lang)
+                st.session_state.messages.append({"role": "assistant", "content": reply, "sources": matched_docs})
                 st.rerun()
 
     with sidebar_col:
         disclaimer_text = "هذا الموقع نموذج أولي مستقل للذكاء الاصطناعي. إنه ليس بوابة حكومية إماراتية رسمية. تحقق دائماً من المصادر الرسمية." if is_arabic else "This website is an independent AI prototype. It is NOT an official UAE government portal. Always verify regulations on official gov source links."
-        st.markdown(f"""
+        st.html(f"""
         <div class="side-disclaimer">
             <div class="side-disclaimer-icon">🛈</div>
             <div class="side-disclaimer-text">
@@ -490,19 +489,19 @@ else:
             <a href="https://rta.ae"         target="_blank" class="hub-link-item"><span>{"هيئة الطرق والمواصلات" if is_arabic else "RTA Traffic Portal"}</span><span>↗</span></a>
             <a href="https://mohre.gov.ae"   target="_blank" class="hub-link-item"><span>{"وزارة الموارد البشرية" if is_arabic else "MOHRE Labour Agency"}</span><span>↗</span></a>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     # ─────────────────────────────────────────────
     # VERIFIED SERVICES LIBRARY
     # ─────────────────────────────────────────────
-    st.markdown('<div id="verified-library"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="library-wrapper">', unsafe_allow_html=True)
+    st.html('<div id="verified-library"></div>')
+    st.html('<div class="library-wrapper">')
 
     lib_header_left, lib_header_right = st.columns([3, 2])
 
     with lib_header_left:
-        st.markdown(f'<div class="library-title">📚 {"مكتبة الخدمات الموثّقة" if is_arabic else "Verified Services Library"} ({st.session_state.selected_library_filter})</div>', unsafe_allow_html=True)
-        st.markdown(f'<p style="font-size:13px; color:#6B7280; margin-top:4px; margin-bottom:0;">{"تحقق من المعايير والقوائم والرسوم وأوقات الانتظار." if is_arabic else "Verify criteria, checklists, fee lists, and wait times."}</p>', unsafe_allow_html=True)
+        st.html(f'<div class="library-title">📚 {"مكتبة الخدمات الموثّقة" if is_arabic else "Verified Services Library"} ({st.session_state.selected_library_filter})</div>')
+        st.html(f'<p style="font-size:13px; color:#6B7280; margin-top:4px; margin-bottom:0;">{"تحقق من المعايير والقوائم والرسوم وأوقات الانتظار." if is_arabic else "Verify criteria, checklists, fee lists, and wait times."}</p>')
 
     with lib_header_right:
         filter_options = ["All", "Visa Services", "Driving License", "Business License"]
@@ -522,7 +521,7 @@ else:
             st.session_state.selected_library_filter = selected_option
             st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.html("<br>")
 
     all_library_items = [
         {
@@ -597,7 +596,7 @@ else:
 
     table_rows_html = "".join(table_rows) if table_rows else "<tr><td colspan='5' style='text-align:center; padding:40px; color:#9CA3AF;'>No records found.</td></tr>"
 
-    st.markdown(
+    st.html(
         "<div class='custom-table-container'>"
         "<table class='custom-table'><thead><tr>"
         "<th style='width:22%;'>Service Title</th>"
@@ -607,17 +606,18 @@ else:
         "<th style='width:18%; text-align:right;'>Fees</th>"
         "</tr></thead>"
         f"<tbody>{table_rows_html}</tbody>"
-        "</table></div>",
-        unsafe_allow_html=True
+        "</table></div>"
     )
 
-    st.markdown("</div>", unsafe_allow_html=True)  # close library-wrapper
+    st.html("</div>")  # close library-wrapper
 
     # ─────────────────────────────────────────────
     # FOOTER
     # ─────────────────────────────────────────────
-    st.markdown("""
+    st.html("""
     <div class="custom-footer-bar">
         © 2026 Public Services Assistant · Hackathon Prototype · Not affiliated with any UAE government authority
     </div>
-    """, unsafe_allow_html=True)
+    """)
+
+
