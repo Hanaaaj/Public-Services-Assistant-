@@ -401,7 +401,7 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
         
         v_title = "🎙️ لوحة التحكم الصوتي المباشر" if is_arabic else "🎙️ Interactive Voice Control Center"
-        v_desc = "استخدم زر التسجيل المدمج أدناه للتحدث مباشرة إلى دليل، وسيقوم النظام بالإجابة صوتياً:" if is_arabic else "Use the cross-compatible input system below to speak directly with Daleel:"
+        v_desc = "اختر طريقة إدخال الصوت المفضلة لديك للتحدث مباشرة إلى النظام:" if is_arabic else "Select your preferred voice input method below to interact with the system:"
         
         st.markdown(f"""
         <div class="voice-interactive-box">
@@ -410,17 +410,30 @@ else:
         </div>
         """, unsafe_allow_html=True)
         
-        # Cross-version safe microphone element via explicit widget definition
-        try:
-            recorded_voice_file = st.audio_input(
-                label="Voice Recorder", 
-                label_visibility="collapsed", 
-                key="primary_voice_mic_device"
-            )
-        except AttributeError:
-            # Fallback for older Streamlit installations
+        # Explicit input mode option selector to guarantee visibility
+        input_mode = st.radio(
+            label="Input Method Selector",
+            options=["Text Input Only", "Live Microphone (st.audio_input)", "Upload Audio File Fallback"],
+            index=0,
+            horizontal=True,
+            key="explicit_input_mode_selector"
+        )
+
+        recorded_voice_file = None
+
+        if input_mode == "Live Microphone (st.audio_input)":
+            try:
+                recorded_voice_file = st.audio_input(
+                    label="Voice Recorder", 
+                    label_visibility="collapsed", 
+                    key="primary_voice_mic_device"
+                )
+            except Exception as e:
+                st.error(f"Live microphone initialization failed: {e}. Please switch to 'Upload Audio File Fallback'.")
+
+        elif input_mode == "Upload Audio File Fallback":
             recorded_voice_file = st.file_uploader(
-                label="🎙️ Older Streamlit Fallback: Upload Audio file (.mp3/.wav/.ogg)", 
+                label="🎙️ Manual Audio Upload (.mp3 / .wav / .m4a)", 
                 type=["mp3", "wav", "m4a", "ogg", "oga"],
                 key="backup_audio_file_uploader"
             )
@@ -581,7 +594,9 @@ else:
             f"<td style='width:18%; color:#111827; font-weight:600; text-align:right;'>{item['fees']}</td>"
             f"</tr>"
         )
+
     table_rows_html = "".join(table_rows) if table_rows else "<tr><td colspan='5' style='text-align:center; padding:40px; color:#9CA3AF;'>No records found.</td></tr>"
+
     st.markdown(
         "<div class='custom-table-container'>"
         "<table class='custom-table'><thead><tr>"
